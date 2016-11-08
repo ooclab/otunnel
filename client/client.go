@@ -55,7 +55,6 @@ var (
 
 // StartDefaultConnect start connection to a default server
 func StartDefaultConnect(addr string) (net.Conn, error) {
-	fmt.Println("----------XXXXXX----------")
 	rawConn, err := net.Dial("tcp", addr)
 	if err != nil {
 		return nil, err
@@ -117,8 +116,6 @@ func NewClient(c *cli.Context) (*Client, error) {
 			logrus.Println(http.ListenAndServe(pprof, nil))
 		}()
 	}
-
-	fmt.Println("tunnels: ", c.StringSlice("tunnel"))
 
 	// TODO: more server support!
 	addr := c.Args().First()
@@ -251,7 +248,6 @@ func (client *Client) connectKCP() (*kcp.UDPSession, error) {
 
 // Start run a server
 func (client *Client) Start() {
-	fmt.Println("abc----->>>>>")
 	switch client.Proto {
 	case "tcp":
 		client.startTCP()
@@ -274,7 +270,6 @@ func (client *Client) startTCP() {
 		l := link.NewLink(nil)
 		l.Bind(conn)
 		for _, t := range client.tunnels {
-			fmt.Println("t = ", t)
 			localHost, localPort, remoteHost, remotePort, reverse, err := parseTunnel(t)
 			if err != nil {
 				panic(err)

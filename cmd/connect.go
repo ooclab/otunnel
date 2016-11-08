@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/urfave/cli"
 
@@ -35,13 +33,10 @@ var connectFlags = []cli.Flag{
 }
 
 func connectAction(c *cli.Context) {
-	log.Info("------ABC------")
-	println("abc----")
 	if c.Bool("debug") {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	fmt.Println("--------------aelige----")
 	_client, err := client.NewClient(c)
 	if err != nil {
 		log.Errorf("connect to server failed: %s", err)

@@ -13,7 +13,7 @@ import (
 	"github.com/ooclab/otunnel/cmd"
 )
 
-const ProgramVersion = "0.3.0"
+const ProgramVersion = "1.0.1"
 
 var (
 	buildstamp = ""
@@ -31,7 +31,6 @@ func main() {
 	// ref: http://blog.ralch.com/tutorial/golang-performance-and-memory-analysis/
 	// go http.ListenAndServe(":8080", http.DefaultServeMux)
 
-	fmt.Println("abc----")
 	cli.VersionPrinter = func(c *cli.Context) {
 		fmt.Println("Current Version: ", c.App.Version)
 		fmt.Println("     Build Time: ", buildstamp)
