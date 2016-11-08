@@ -1,15 +1,12 @@
 package server
 
 import (
-	"io"
-
 	"github.com/Sirupsen/logrus"
-	"github.com/ooclab/es/emsg"
+	"github.com/ooclab/otunnel/common/emsg"
 	pjson "github.com/ooclab/otunnel/proto/json"
 )
 
-func handshake(rawConn io.ReadWriteCloser) error {
-	conn := emsg.NewConn(rawConn)
+func handshake(conn *emsg.Conn) error {
 	jconn := pjson.NewConn(conn)
 
 	if err := handleAuth(jconn); err != nil {

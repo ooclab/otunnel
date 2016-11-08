@@ -10,8 +10,10 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/ooclab/es/ecrypt"
 	"github.com/ooclab/es/link"
 	"github.com/ooclab/otunnel/common/connection"
+	"github.com/ooclab/otunnel/common/emsg"
 	"github.com/urfave/cli"
 	"github.com/xtaci/kcp-go"
 
@@ -159,11 +161,13 @@ func (s *Server) startTCP() {
 
 		logrus.Debugf("accept new client from %s", rawConn.RemoteAddr())
 		var conn io.ReadWriteCloser
+		hConn := emsg.NewConn(rawConn)
 
 		if s.Type == "aes" {
 			// TODO: custom cipher for each connection
-			cipher := connection.NewCipher("aes256cfb", []byte(s.secret))
+			cipher := ecrypt.NewCipher("aes256cfb", []byte(s.secret))
 			conn = connection.NewConn(rawConn, cipher)
+			hConn.SetCipher(cipher)
 		} else {
 			conn = rawConn
 		}
@@ -171,7 +175,7 @@ func (s *Server) startTCP() {
 		// Important!
 		rawConn.SetReadDeadline(time.Now().Add(time.Second * 6))
 
-		if err := handshake(conn); err != nil {
+		if err := handshake(hConn); err != nil {
 			logrus.Errorf("handshake failed: %s", err)
 			conn.Close()
 			continue

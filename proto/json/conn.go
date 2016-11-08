@@ -3,7 +3,7 @@ package json
 import (
 	"encoding/json"
 
-	"github.com/ooclab/es/emsg"
+	"github.com/ooclab/otunnel/common/emsg"
 )
 
 // Conn is a json proto connection

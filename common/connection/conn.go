@@ -1,13 +1,17 @@
 package connection
 
-import "net"
+import (
+	"net"
+
+	"github.com/ooclab/es/ecrypt"
+)
 
 type Conn struct {
 	conn   net.Conn
-	cipher *Cipher
+	cipher *ecrypt.Cipher
 }
 
-func NewConn(conn net.Conn, cipher *Cipher) *Conn {
+func NewConn(conn net.Conn, cipher *ecrypt.Cipher) *Conn {
 	return &Conn{
 		conn:   conn,
 		cipher: cipher,
@@ -17,13 +21,13 @@ func NewConn(conn net.Conn, cipher *Cipher) *Conn {
 func (c *Conn) Read(b []byte) (int, error) {
 	n, err := c.conn.Read(b)
 	if err == nil {
-		c.cipher.decrypt(b, b)
+		c.cipher.Decrypt(b, b)
 	}
 	return n, err
 }
 
 func (c *Conn) Write(b []byte) (int, error) {
-	c.cipher.encrypt(b, b)
+	c.cipher.Encrypt(b, b)
 	return c.conn.Write(b)
 }
 

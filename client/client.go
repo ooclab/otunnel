@@ -20,8 +20,10 @@ import (
 	"github.com/urfave/cli"
 	"github.com/xtaci/kcp-go"
 
+	"github.com/ooclab/es/ecrypt"
 	"github.com/ooclab/es/link"
 	"github.com/ooclab/otunnel/common/connection"
+	"github.com/ooclab/otunnel/common/emsg"
 )
 
 // Config for client
@@ -177,16 +179,18 @@ func (client *Client) connectTCP() (io.ReadWriteCloser, error) {
 	logrus.Debugf("connect to %s success", rawConn.RemoteAddr())
 
 	var conn io.ReadWriteCloser
+	hConn := emsg.NewConn(rawConn)
 
 	if client.Type == "aes" {
 		// TODO: custom cipher for each connection
-		cipher := connection.NewCipher("aes256cfb", []byte(client.secret))
+		cipher := ecrypt.NewCipher("aes256cfb", []byte(client.secret))
 		conn = connection.NewConn(rawConn, cipher)
+		hConn.SetCipher(cipher)
 	} else {
 		conn = rawConn
 	}
 
-	if err := handshake(conn); err != nil {
+	if err := handshake(hConn); err != nil {
 		logrus.Errorf("handshake failed: %s", err)
 		conn.Close()
 		return nil, err
