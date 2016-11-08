@@ -21,7 +21,7 @@ func NewConn(conn net.Conn, cipher *ecrypt.Cipher) *Conn {
 func (c *Conn) Read(b []byte) (int, error) {
 	n, err := c.conn.Read(b)
 	if err == nil {
-		c.cipher.Decrypt(b, b)
+		c.cipher.Decrypt(b[0:n], b[0:n])
 	}
 	return n, err
 }

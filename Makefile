@@ -33,3 +33,5 @@ windows-32:
 	GOOS=windows GOARCH=386 $(GOBUILD) -v $(LDFLAGS) -o $(PROGRAM_NAME)
 ddwrt:
 	GOARCH=arm GOOS=linux GOARM=5 $(GOBUILD) -v $(LDFLAGS) -o $(PROGRAM_NAME)
+arm:
+	GOARCH=arm GOOS=linux GOARM=7 $(GOBUILD) -v $(LDFLAGS) -o $(PROGRAM_NAME)
