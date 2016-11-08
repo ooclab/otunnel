@@ -2,7 +2,6 @@ package json
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/ooclab/es/emsg"
 )
@@ -17,10 +16,6 @@ func NewConn(conn *emsg.Conn) *Conn {
 	return &Conn{
 		conn: conn,
 	}
-}
-
-func (c *Conn) String() string {
-	return fmt.Sprintf(`%s -> %s`, c.conn.RemoteAddr(), c.conn.LocalAddr())
 }
 
 // Request send and recv payload

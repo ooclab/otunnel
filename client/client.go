@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"strconv"
@@ -19,8 +20,8 @@ import (
 	"github.com/urfave/cli"
 	"github.com/xtaci/kcp-go"
 
-	"github.com/ooclab/es/emsg"
 	"github.com/ooclab/es/link"
+	"github.com/ooclab/otunnel/common/connection"
 )
 
 // Config for client
@@ -141,7 +142,7 @@ func NewClient(c *cli.Context) (*Client, error) {
 	return client, nil
 }
 
-func (client *Client) connect() (net.Conn, error) {
+func (client *Client) connect() (io.ReadWriteCloser, error) {
 	switch client.Proto {
 	case "tcp":
 		return client.connectTCP()
@@ -153,7 +154,7 @@ func (client *Client) connect() (net.Conn, error) {
 	}
 }
 
-func (client *Client) connectTCP() (net.Conn, error) {
+func (client *Client) connectTCP() (io.ReadWriteCloser, error) {
 	// logrus.Debugf("connect to %s", client.addr)
 
 	var rawConn net.Conn
@@ -175,12 +176,14 @@ func (client *Client) connectTCP() (net.Conn, error) {
 
 	logrus.Debugf("connect to %s success", rawConn.RemoteAddr())
 
-	conn := emsg.NewConn(rawConn)
+	var conn io.ReadWriteCloser
+
 	if client.Type == "aes" {
-		logrus.Warn("aes is not completed")
 		// TODO: custom cipher for each connection
-		// cipher := emsg.NewCipher("aes256cfb", []byte(client.secret))
-		// conn.SetCipher(cipher)
+		cipher := connection.NewCipher("aes256cfb", []byte(client.secret))
+		conn = connection.NewConn(rawConn, cipher)
+	} else {
+		conn = rawConn
 	}
 
 	if err := handshake(conn); err != nil {
@@ -189,7 +192,7 @@ func (client *Client) connectTCP() (net.Conn, error) {
 		return nil, err
 	}
 
-	return rawConn, nil
+	return conn, nil
 }
 
 func (client *Client) connectKCP() (*kcp.UDPSession, error) {

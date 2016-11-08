@@ -1,11 +1,15 @@
 package server
 
 import (
+	"io"
+
+	"github.com/Sirupsen/logrus"
 	"github.com/ooclab/es/emsg"
 	pjson "github.com/ooclab/otunnel/proto/json"
 )
 
-func handshake(conn *emsg.Conn) error {
+func handshake(rawConn io.ReadWriteCloser) error {
+	conn := emsg.NewConn(rawConn)
 	jconn := pjson.NewConn(conn)
 
 	if err := handleAuth(jconn); err != nil {
@@ -16,7 +20,7 @@ func handshake(conn *emsg.Conn) error {
 }
 
 func handleAuth(c *pjson.Conn) error {
-	_, err := c.Recv()
+	m, err := c.Recv()
 	if err != nil {
 		return err
 	}
@@ -28,7 +32,7 @@ func handleAuth(c *pjson.Conn) error {
 	// 	return errors.New("not admin user")
 	// }
 
-	// log.Debugf("req = %+v\n", req)
+	logrus.Debugf("handle auth, go request: %+v\n", m)
 	return c.Send(map[string]interface{}{
 		"link_id": 123456,
 		"hello":   "world",

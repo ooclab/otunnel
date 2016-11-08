@@ -3,14 +3,15 @@ package server
 import (
 	"crypto/sha1"
 	"crypto/tls"
+	"io"
 	"net"
 	"time"
 
 	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/ooclab/es/emsg"
 	"github.com/ooclab/es/link"
+	"github.com/ooclab/otunnel/common/connection"
 	"github.com/urfave/cli"
 	"github.com/xtaci/kcp-go"
 
@@ -157,12 +158,14 @@ func (s *Server) startTCP() {
 		}
 
 		logrus.Debugf("accept new client from %s", rawConn.RemoteAddr())
-		conn := emsg.NewConn(rawConn)
+		var conn io.ReadWriteCloser
+
 		if s.Type == "aes" {
-			logrus.Warn("aes is not completed!")
 			// TODO: custom cipher for each connection
-			// cipher := emsg.NewCipher("aes256cfb", []byte(s.secret))
-			// conn.SetCipher(cipher)
+			cipher := connection.NewCipher("aes256cfb", []byte(s.secret))
+			conn = connection.NewConn(rawConn, cipher)
+		} else {
+			conn = rawConn
 		}
 
 		// Important!
@@ -177,18 +180,18 @@ func (s *Server) startTCP() {
 		// Important! cancel timeout!
 		rawConn.SetReadDeadline(time.Time{})
 
-		go s.handleTCPClient(rawConn)
+		go s.handleTCPClient(conn)
 	}
 }
 
-func (s *Server) handleTCPClient(conn net.Conn) {
-	client_name := conn.RemoteAddr()
+func (s *Server) handleTCPClient(conn io.ReadWriteCloser) {
+	// client_name := conn.((*net.TCPConn)).RemoteAddr()
 	l := link.NewLink(nil)
 	l.Bind(conn)
 	l.WaitDisconnected()
 
 	// client 断开连接
-	logrus.Warnf("client %s is offline", client_name)
+	logrus.Warnf("client %#v is offline", conn)
 	l.Close()
 	conn.Close()
 }
