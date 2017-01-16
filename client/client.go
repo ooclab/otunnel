@@ -1,7 +1,6 @@
 package client
 
 import (
-	"crypto/sha1"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -12,13 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/crypto/pbkdf2"
-
 	_ "net/http/pprof"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/urfave/cli"
-	"github.com/xtaci/kcp-go"
 
 	"github.com/ooclab/es/ecrypt"
 	"github.com/ooclab/es/link"
@@ -50,11 +46,6 @@ type KCPClientConfig struct {
 	SockBuf      int  `json:"sockbuf"`
 	KeepAlive    int  `json:"keepalive"`
 }
-
-var (
-	// SALT is use for pbkdf2 key expansion
-	KCP_SALT = "kcp-go"
-)
 
 // StartDefaultConnect start connection to a default server
 func StartDefaultConnect(addr string) (net.Conn, error) {
@@ -148,8 +139,6 @@ func (client *Client) connect() (io.ReadWriteCloser, error) {
 	switch client.Proto {
 	case "tcp":
 		return client.connectTCP()
-	// case "kcp":
-	// 	return client.connectKCP()
 	default:
 		logrus.Errorf("unknown proto : %s", client.Proto)
 		return nil, errors.New("unknown link proto")
@@ -199,67 +188,11 @@ func (client *Client) connectTCP() (io.ReadWriteCloser, error) {
 	return conn, nil
 }
 
-func (client *Client) connectKCP() (*kcp.UDPSession, error) {
-	logrus.Debugf("connect to KCP server %s", client.addr)
-
-	config := &KCPClientConfig{
-		Crypt:        "aes",
-		Mode:         "fast",
-		MTU:          1350,
-		SndWnd:       1024,
-		RcvWnd:       1024,
-		DataShard:    10,
-		ParityShard:  3,
-		DSCP:         0,
-		NoComp:       false,
-		AckNodelay:   true,
-		NoDelay:      0,
-		Interval:     40,
-		Resend:       0,
-		NoCongestion: 0,
-		SockBuf:      4194304,
-		KeepAlive:    10,
-	}
-
-	pass := pbkdf2.Key([]byte(client.secret), []byte(KCP_SALT), 4096, 32, sha1.New)
-	block, _ := kcp.NewAESBlockCrypt(pass)
-
-	kcpconn, err := kcp.DialWithOptions(client.addr, block, config.DataShard, config.ParityShard)
-	if err != nil {
-		logrus.Errorf("connect to kcp server %s error: %s", client.addr, err)
-		return nil, err
-	}
-
-	kcpconn.SetStreamMode(true)
-	kcpconn.SetNoDelay(config.NoDelay, config.Interval, config.Resend, config.NoCongestion)
-	kcpconn.SetWindowSize(config.SndWnd, config.RcvWnd)
-	kcpconn.SetMtu(config.MTU)
-	kcpconn.SetACKNoDelay(config.AckNodelay)
-	kcpconn.SetKeepAlive(config.KeepAlive)
-
-	if err := kcpconn.SetDSCP(config.DSCP); err != nil {
-		logrus.Error("SetDSCP:", err)
-	}
-	if err := kcpconn.SetReadBuffer(config.SockBuf); err != nil {
-		logrus.Error("SetReadBuffer:", err)
-	}
-	if err := kcpconn.SetWriteBuffer(config.SockBuf); err != nil {
-		logrus.Error("SetWriteBuffer:", err)
-	}
-
-	logrus.Debugf("connect to kcp server %s success", kcpconn.RemoteAddr())
-
-	// conn := emsg.NewConn(kcpconn)
-	return kcpconn, nil
-}
-
 // Start run a server
 func (client *Client) Start() {
 	switch client.Proto {
 	case "tcp":
 		client.startTCP()
-	case "kcp":
-		client.startKCP()
 	default:
 		logrus.Errorf("unknown proto : %s", client.Proto)
 	}
@@ -288,27 +221,6 @@ func (client *Client) startTCP() {
 		time.Sleep(1 * time.Second) // TODO: sleep smartly
 	}
 
-}
-
-func (client *Client) startKCP() {
-
-	for {
-		l := link.NewLink(nil)
-
-		conn, err := client.connect()
-		if err != nil {
-			logrus.Errorf("start connect failed: %s", err)
-			return
-		}
-
-		errCh := l.Join(conn)
-		// l.OpenTunnel(localHost, localPort, remoteHost, remotePort, reverse)
-		<-errCh
-
-		//  FIXME! 不应该到这里！
-		logrus.Debugf("client connection break!")
-		time.Sleep(1 * time.Second)
-	}
 }
 
 func parseTunnel(value string) (localHost string, localPort int, remoteHost string, remotePort int, reverse bool, err error) {

@@ -1,13 +1,10 @@
 package server
 
 import (
-	"crypto/sha1"
 	"crypto/tls"
 	"io"
 	"net"
 	"time"
-
-	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/ooclab/es/ecrypt"
@@ -15,7 +12,6 @@ import (
 	"github.com/ooclab/otunnel/common/connection"
 	"github.com/ooclab/otunnel/common/emsg"
 	"github.com/urfave/cli"
-	"github.com/xtaci/kcp-go"
 
 	"net/http"
 	_ "net/http/pprof"
@@ -41,11 +37,6 @@ type KCPServerConfig struct {
 	KeepAlive    int    `json:"keepalive"`
 	Log          string `json:"log"`
 }
-
-var (
-	// SALT is use for pbkdf2 key expansion
-	KCP_SALT = "kcp-go"
-)
 
 // StartDefaultListener run a default listener
 func StartDefaultListener(addr string) (net.Listener, error) {
@@ -125,8 +116,6 @@ func (s *Server) Start() {
 	switch s.Proto {
 	case "tcp":
 		s.startTCP()
-	case "kcp":
-		s.startKCP()
 	default:
 		logrus.Errorf("unknown link proto: %s", s.Proto)
 	}
@@ -196,81 +185,6 @@ func (s *Server) handleTCPClient(conn io.ReadWriteCloser) {
 
 	// client 断开连接
 	logrus.Warnf("client %#v is offline", conn)
-	l.Close()
-	conn.Close()
-}
-
-func (s *Server) startKCP() {
-	config := &KCPServerConfig{
-		Crypt:        "aes",
-		Mode:         "fast",
-		MTU:          1350,
-		SndWnd:       1024,
-		RcvWnd:       1024,
-		DataShard:    10,
-		ParityShard:  3,
-		DSCP:         0,
-		NoComp:       false,
-		AckNodelay:   true,
-		NoDelay:      0,
-		Interval:     40,
-		Resend:       0,
-		NoCongestion: 0,
-		SockBuf:      4194304,
-		KeepAlive:    10,
-	}
-
-	// var l net.Listener
-	// var err error
-
-	pass := pbkdf2.Key([]byte(s.secret), []byte(KCP_SALT), 4096, 32, sha1.New)
-	block, _ := kcp.NewAESBlockCrypt(pass)
-
-	l, err := kcp.ListenWithOptions(s.addr, block, config.DataShard, config.ParityShard)
-	if err != nil {
-		logrus.Error("start kcp listen error:", err)
-		return
-	}
-	logrus.Debugf("start kcp server listen on %s", l.Addr())
-
-	if err := l.SetDSCP(config.DSCP); err != nil {
-		logrus.Println("SetDSCP:", err)
-	}
-	if err := l.SetReadBuffer(config.SockBuf); err != nil {
-		logrus.Println("SetReadBuffer:", err)
-	}
-	if err := l.SetWriteBuffer(config.SockBuf); err != nil {
-		logrus.Println("SetWriteBuffer:", err)
-	}
-
-	for {
-		rawConn, err := l.AcceptKCP()
-		if err != nil {
-			logrus.Errorf("accept new client error: %+v", err)
-			continue // TODO: fix me!
-		}
-
-		logrus.Debugf("accept new client from %s", rawConn.RemoteAddr())
-
-		rawConn.SetStreamMode(true)
-		rawConn.SetNoDelay(config.NoDelay, config.Interval, config.Resend, config.NoCongestion)
-		rawConn.SetMtu(config.MTU)
-		rawConn.SetWindowSize(config.SndWnd, config.RcvWnd)
-		rawConn.SetACKNoDelay(config.AckNodelay)
-		rawConn.SetKeepAlive(config.KeepAlive)
-
-		go s.handleKCPClient(rawConn)
-	}
-}
-
-func (s *Server) handleKCPClient(conn net.Conn) {
-	client_name := conn.RemoteAddr()
-	l := link.NewLink(nil)
-	errCh := l.Join(conn)
-	<-errCh
-
-	// client 断开连接
-	logrus.Warnf("client %s is offline", client_name)
 	l.Close()
 	conn.Close()
 }
