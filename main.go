@@ -13,7 +13,7 @@ import (
 	"github.com/ooclab/otunnel/cmd"
 )
 
-const ProgramVersion = "1.0.1"
+const ProgramVersion = "1.1.0"
 
 var (
 	buildstamp = ""

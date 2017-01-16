@@ -190,7 +190,7 @@ func (s *Server) startTCP() {
 
 func (s *Server) handleTCPClient(conn io.ReadWriteCloser) {
 	// client_name := conn.((*net.TCPConn)).RemoteAddr()
-	l := link.NewLink(nil)
+	l := link.NewLink(&link.LinkConfig{IsServerSide: true})
 	l.Bind(conn)
 	l.WaitDisconnected()
 

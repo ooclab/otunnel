@@ -274,7 +274,7 @@ func (client *Client) startTCP() {
 			continue
 		}
 
-		l := link.NewLink(nil)
+		l := link.NewLink(&link.LinkConfig{IsServerSide: false})
 		l.Bind(conn)
 		for _, t := range client.tunnels {
 			localHost, localPort, remoteHost, remotePort, reverse, err := parseTunnel(t)
