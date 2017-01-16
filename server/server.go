@@ -191,8 +191,8 @@ func (s *Server) startTCP() {
 func (s *Server) handleTCPClient(conn io.ReadWriteCloser) {
 	// client_name := conn.((*net.TCPConn)).RemoteAddr()
 	l := link.NewLink(&link.LinkConfig{IsServerSide: true})
-	l.Bind(conn)
-	l.WaitDisconnected()
+	errCh := l.Join(conn)
+	<-errCh
 
 	// client 断开连接
 	logrus.Warnf("client %#v is offline", conn)
@@ -228,7 +228,7 @@ func (s *Server) startKCP() {
 
 	l, err := kcp.ListenWithOptions(s.addr, block, config.DataShard, config.ParityShard)
 	if err != nil {
-		logrus.Errorf("start kcp listen error:", err)
+		logrus.Error("start kcp listen error:", err)
 		return
 	}
 	logrus.Debugf("start kcp server listen on %s", l.Addr())
@@ -266,8 +266,8 @@ func (s *Server) startKCP() {
 func (s *Server) handleKCPClient(conn net.Conn) {
 	client_name := conn.RemoteAddr()
 	l := link.NewLink(nil)
-	l.Bind(conn)
-	l.WaitDisconnected()
+	errCh := l.Join(conn)
+	<-errCh
 
 	// client 断开连接
 	logrus.Warnf("client %s is offline", client_name)

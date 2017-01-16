@@ -275,7 +275,7 @@ func (client *Client) startTCP() {
 		}
 
 		l := link.NewLink(&link.LinkConfig{IsServerSide: false})
-		l.Bind(conn)
+		errCh := l.Join(conn)
 		for _, t := range client.tunnels {
 			localHost, localPort, remoteHost, remotePort, reverse, err := parseTunnel(t)
 			if err != nil {
@@ -283,7 +283,7 @@ func (client *Client) startTCP() {
 			}
 			l.OpenTunnel(localHost, localPort, remoteHost, remotePort, reverse)
 		}
-		l.WaitDisconnected()
+		<-errCh
 		l.Close()
 		time.Sleep(1 * time.Second) // TODO: sleep smartly
 	}
@@ -301,9 +301,9 @@ func (client *Client) startKCP() {
 			return
 		}
 
-		l.Bind(conn)
+		errCh := l.Join(conn)
 		// l.OpenTunnel(localHost, localPort, remoteHost, remotePort, reverse)
-		l.WaitDisconnected()
+		<-errCh
 
 		//  FIXME! 不应该到这里！
 		logrus.Debugf("client connection break!")
