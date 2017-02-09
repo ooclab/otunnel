@@ -39,3 +39,11 @@ func connectAction(c *cli.Context) {
 	}
 	_client.Start()
 }
+
+// CommandConnect run connect command
+var CommandConnect = cli.Command{
+	Name:   "connect",
+	Usage:  "connect to a server",
+	Flags:  connectFlags,
+	Action: connectAction,
+}

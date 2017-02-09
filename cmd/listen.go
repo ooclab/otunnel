@@ -31,3 +31,11 @@ func listenAction(c *cli.Context) {
 	_server := server.NewServer(c)
 	_server.Start()
 }
+
+// CommandListen run listen command
+var CommandListen = cli.Command{
+	Name:   "listen",
+	Usage:  "Listen as a server, wait connects from clients.",
+	Flags:  listenFlags,
+	Action: listenAction,
+}
