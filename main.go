@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/ooclab/otunnel/cmd"
+	"github.com/ooclab/otunnel/client"
 	"github.com/urfave/cli"
 )
 
@@ -39,8 +39,8 @@ func main() {
 	app.Usage = "otunnel is a simple & secure tunnel tool"
 	app.Version = programVersion
 	app.Commands = []cli.Command{
-		cmd.CommandListen,
-		cmd.CommandConnect,
+		client.Command,
+		client.Command,
 	}
 	app.Run(os.Args)
 }

@@ -53,8 +53,7 @@ type Server struct {
 	certFile string
 }
 
-// NewServer create a server object
-func NewServer(c *cli.Context) *Server {
+func newServer(c *cli.Context) *Server {
 	addr := c.Args().First()
 	if len(addr) == 0 {
 		addr = ":10000"

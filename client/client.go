@@ -71,7 +71,7 @@ type Client struct {
 }
 
 // NewClient create a server object
-func NewClient(c *cli.Context) (*Client, error) {
+func newClient(c *cli.Context) (*Client, error) {
 	if c.NArg() == 0 {
 		return nil, errors.New("NEED server address")
 	}
