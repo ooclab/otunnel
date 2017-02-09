@@ -12,31 +12,7 @@ import (
 	"github.com/ooclab/otunnel/common/connection"
 	"github.com/ooclab/otunnel/common/emsg"
 	"github.com/urfave/cli"
-
-	"net/http"
-	_ "net/http/pprof"
 )
-
-type KCPServerConfig struct {
-	Key          string `json:"key"`
-	Crypt        string `json:"crypt"`
-	Mode         string `json:"mode"`
-	MTU          int    `json:"mtu"`
-	SndWnd       int    `json:"sndwnd"`
-	RcvWnd       int    `json:"rcvwnd"`
-	DataShard    int    `json:"datashard"`
-	ParityShard  int    `json:"parityshard"`
-	DSCP         int    `json:"dscp"`
-	NoComp       bool   `json:"nocomp"`
-	AckNodelay   bool   `json:"acknodelay"`
-	NoDelay      int    `json:"nodelay"`
-	Interval     int    `json:"interval"`
-	Resend       int    `json:"resend"`
-	NoCongestion int    `json:"nc"`
-	SockBuf      int    `json:"sockbuf"`
-	KeepAlive    int    `json:"keepalive"`
-	Log          string `json:"log"`
-}
 
 // StartDefaultListener run a default listener
 func StartDefaultListener(addr string) (net.Listener, error) {
@@ -79,13 +55,6 @@ type Server struct {
 
 // NewServer create a server object
 func NewServer(c *cli.Context) *Server {
-	pprof := c.String("pprof")
-	if pprof != "" {
-		go func() {
-			logrus.Println(http.ListenAndServe(pprof, nil))
-		}()
-	}
-
 	addr := c.Args().First()
 	if len(addr) == 0 {
 		addr = ":10000"

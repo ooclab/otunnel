@@ -21,11 +21,6 @@ var listenFlags = []cli.Flag{
 		Value: "",
 		Usage: "secret phrase",
 	},
-	cli.StringFlag{
-		Name:  "pprof",
-		Value: "",
-		Usage: "listen address for pprof",
-	},
 }
 
 func listenAction(c *cli.Context) {

@@ -25,11 +25,6 @@ var connectFlags = []cli.Flag{
 		Name:  "t, tunnel",
 		Usage: "new tunnel",
 	},
-	cli.StringFlag{
-		Name:  "pprof",
-		Value: "",
-		Usage: "listen address for pprof",
-	},
 }
 
 func connectAction(c *cli.Context) {

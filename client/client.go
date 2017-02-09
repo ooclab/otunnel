@@ -6,12 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
-
-	_ "net/http/pprof"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -21,31 +18,6 @@ import (
 	"github.com/ooclab/otunnel/common/connection"
 	"github.com/ooclab/otunnel/common/emsg"
 )
-
-// Config for client
-type KCPClientConfig struct {
-	Key   string `json:"key"`
-	Crypt string `json:"crypt"`
-	Mode  string `json:"mode"`
-
-	Conn       int `json:"conn"`
-	AutoExpire int `json:"autoexpire"`
-
-	MTU          int  `json:"mtu"`
-	SndWnd       int  `json:"sndwnd"`
-	RcvWnd       int  `json:"rcvwnd"`
-	DataShard    int  `json:"datashard"`
-	ParityShard  int  `json:"parityshard"`
-	DSCP         int  `json:"dscp"`
-	NoComp       bool `json:"nocomp"`
-	AckNodelay   bool `json:"acknodelay"`
-	NoDelay      int  `json:"nodelay"`
-	Interval     int  `json:"interval"`
-	Resend       int  `json:"resend"`
-	NoCongestion int  `json:"nc"`
-	SockBuf      int  `json:"sockbuf"`
-	KeepAlive    int  `json:"keepalive"`
-}
 
 // StartDefaultConnect start connection to a default server
 func StartDefaultConnect(addr string) (net.Conn, error) {
@@ -102,13 +74,6 @@ type Client struct {
 func NewClient(c *cli.Context) (*Client, error) {
 	if c.NArg() == 0 {
 		return nil, errors.New("NEED server address")
-	}
-
-	pprof := c.String("pprof")
-	if pprof != "" {
-		go func() {
-			logrus.Println(http.ListenAndServe(pprof, nil))
-		}()
 	}
 
 	// TODO: more server support!
