@@ -26,4 +26,16 @@ Now, anyone can access your `LOCAL_HOST:LOCAL_PORT` by `example.com:REMOTE_PORT`
 
 ## Document
 
-[Wiki](https://github.com/ooclab/otunnel/wiki)
+[Wiki/手册](https://github.com/ooclab/otunnel/wiki)
+
+## Download
+
+[Download](http://dl.ooclab.com/otunnel/)
+
+For example:
+
+```
+wget http://dl.ooclab.com/otunnel/1.1.0/otunnel_linux_amd64.xz
+unxz otunnel_linux_amd64.xz
+chmod a+x otunnel_linux_amd64
+```
