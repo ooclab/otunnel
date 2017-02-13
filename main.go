@@ -6,6 +6,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/ooclab/otunnel/client"
+	"github.com/ooclab/otunnel/server"
 	"github.com/urfave/cli"
 )
 
@@ -40,7 +41,7 @@ func main() {
 	app.Version = programVersion
 	app.Commands = []cli.Command{
 		client.Command,
-		client.Command,
+		server.Command,
 	}
 	app.Run(os.Args)
 }
