@@ -38,4 +38,5 @@ For example:
 wget http://dl.ooclab.com/otunnel/1.1.0/otunnel_linux_amd64.xz
 unxz otunnel_linux_amd64.xz
 chmod a+x otunnel_linux_amd64
+mv otunnel_linux_amd64 otunnel
 ```
