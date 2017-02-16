@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"strconv"
 	"strings"
@@ -13,10 +12,9 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/urfave/cli"
 
+	"github.com/ooclab/es"
 	"github.com/ooclab/es/ecrypt"
 	"github.com/ooclab/es/link"
-	"github.com/ooclab/otunnel/common/connection"
-	"github.com/ooclab/otunnel/common/emsg"
 )
 
 // StartDefaultConnect start connection to a default server
@@ -100,7 +98,7 @@ func newClient(c *cli.Context) (*Client, error) {
 	return client, nil
 }
 
-func (client *Client) connect() (io.ReadWriteCloser, error) {
+func (client *Client) connect() (es.Conn, error) {
 	switch client.Proto {
 	case "tcp":
 		return client.connectTCP()
@@ -110,7 +108,7 @@ func (client *Client) connect() (io.ReadWriteCloser, error) {
 	}
 }
 
-func (client *Client) connectTCP() (io.ReadWriteCloser, error) {
+func (client *Client) connectTCP() (es.Conn, error) {
 	// logrus.Debugf("connect to %s", client.addr)
 
 	var rawConn net.Conn
@@ -132,19 +130,17 @@ func (client *Client) connectTCP() (io.ReadWriteCloser, error) {
 
 	logrus.Debugf("connect to %s success", rawConn.RemoteAddr())
 
-	var conn io.ReadWriteCloser
-	hConn := emsg.NewConn(rawConn)
+	var conn es.Conn
 
 	if client.Type == "aes" {
 		// TODO: custom cipher for each connection
 		cipher := ecrypt.NewCipher("aes256cfb", []byte(client.secret))
-		conn = connection.NewConn(rawConn, cipher)
-		hConn.SetCipher(cipher)
+		conn = es.NewSafeConn(rawConn, cipher)
 	} else {
-		conn = rawConn
+		conn = es.NewBaseConn(rawConn)
 	}
 
-	if err := handshake(hConn); err != nil {
+	if err := handshake(conn); err != nil {
 		logrus.Errorf("handshake failed: %s", err)
 		conn.Close()
 		return nil, err
@@ -173,15 +169,18 @@ func (client *Client) startTCP() {
 		}
 
 		l := link.NewLink(&link.LinkConfig{IsServerSide: false})
-		errCh := l.Join(conn)
-		for _, t := range client.tunnels {
-			localHost, localPort, remoteHost, remotePort, reverse, err := parseTunnel(t)
-			if err != nil {
-				panic(err)
+		go func() {
+			// FIXME!
+			time.Sleep(1 * time.Second)
+			for _, t := range client.tunnels {
+				localHost, localPort, remoteHost, remotePort, reverse, err := parseTunnel(t)
+				if err != nil {
+					panic(err)
+				}
+				l.OpenTunnel(localHost, localPort, remoteHost, remotePort, reverse)
 			}
-			l.OpenTunnel(localHost, localPort, remoteHost, remotePort, reverse)
-		}
-		<-errCh
+		}()
+		l.Bind(conn)
 		l.Close()
 		time.Sleep(1 * time.Second) // TODO: sleep smartly
 	}

@@ -3,11 +3,11 @@ package client
 import (
 	"errors"
 
-	"github.com/ooclab/otunnel/common/emsg"
+	"github.com/ooclab/es"
 	pjson "github.com/ooclab/otunnel/proto/json"
 )
 
-func handshake(conn *emsg.Conn) error {
+func handshake(conn es.Conn) error {
 	jconn := pjson.NewConn(conn)
 
 	if err := clientAuth(jconn); err != nil {

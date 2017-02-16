@@ -2,15 +2,13 @@ package server
 
 import (
 	"crypto/tls"
-	"io"
 	"net"
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/ooclab/es"
 	"github.com/ooclab/es/ecrypt"
 	"github.com/ooclab/es/link"
-	"github.com/ooclab/otunnel/common/connection"
-	"github.com/ooclab/otunnel/common/emsg"
 	"github.com/urfave/cli"
 )
 
@@ -117,22 +115,20 @@ func (s *Server) startTCP() {
 		}
 
 		logrus.Debugf("accept new client from %s", rawConn.RemoteAddr())
-		var conn io.ReadWriteCloser
-		hConn := emsg.NewConn(rawConn)
+		var conn es.Conn
 
 		if s.Type == "aes" {
 			// TODO: custom cipher for each connection
 			cipher := ecrypt.NewCipher("aes256cfb", []byte(s.secret))
-			conn = connection.NewConn(rawConn, cipher)
-			hConn.SetCipher(cipher)
+			conn = es.NewSafeConn(rawConn, cipher)
 		} else {
-			conn = rawConn
+			conn = es.NewBaseConn(rawConn)
 		}
 
 		// Important!
 		rawConn.SetReadDeadline(time.Now().Add(time.Second * 6))
 
-		if err := handshake(hConn); err != nil {
+		if err := handshake(conn); err != nil {
 			logrus.Errorf("handshake failed: %s", err)
 			conn.Close()
 			continue
@@ -145,11 +141,10 @@ func (s *Server) startTCP() {
 	}
 }
 
-func (s *Server) handleTCPClient(conn io.ReadWriteCloser) {
+func (s *Server) handleTCPClient(conn es.Conn) {
 	// client_name := conn.((*net.TCPConn)).RemoteAddr()
 	l := link.NewLink(&link.LinkConfig{IsServerSide: true})
-	errCh := l.Join(conn)
-	<-errCh
+	l.Bind(conn)
 
 	// client 断开连接
 	logrus.Warnf("client %#v is offline", conn)
