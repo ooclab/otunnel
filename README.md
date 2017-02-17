@@ -40,3 +40,8 @@ unxz otunnel_linux_amd64.xz
 chmod a+x otunnel_linux_amd64
 mv otunnel_linux_amd64 otunnel
 ```
+
+## Help
+
+Please send issues to [github.com/ooclab/otunnel/issues](https://github.com/ooclab/otunnel/issues) .
+
