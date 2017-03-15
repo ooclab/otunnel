@@ -173,11 +173,11 @@ func (client *Client) startTCP() {
 			// FIXME!
 			time.Sleep(1 * time.Second)
 			for _, t := range client.tunnels {
-				localHost, localPort, remoteHost, remotePort, reverse, err := parseTunnel(t)
+				proto, localHost, localPort, remoteHost, remotePort, reverse, err := parseTunnel(t)
 				if err != nil {
 					panic(err)
 				}
-				l.OpenTunnel(localHost, localPort, remoteHost, remotePort, reverse)
+				l.OpenTunnel(proto, localHost, localPort, remoteHost, remotePort, reverse)
 			}
 		}()
 		l.Bind(conn)
@@ -187,16 +187,20 @@ func (client *Client) startTCP() {
 
 }
 
-func parseTunnel(value string) (localHost string, localPort int, remoteHost string, remotePort int, reverse bool, err error) {
+func parseTunnel(value string) (proto string, localHost string, localPort int, remoteHost string, remotePort int, reverse bool, err error) {
 	L := strings.Split(value, ":")
-	if len(L) != 5 {
-		fmt.Println("tunnel format: \"r|f:local_host:local_port:remote_host:remote_port\"")
+
+	// !IMPORTANT! support old configure
+	if len(L) == 5 {
+		L = append([]string{L[0], "tcp"}, L[1:]...)
+	}
+
+	if len(L) != 6 {
+		fmt.Println("tunnel format: \"r|f:proto:local_host:local_port:remote_host:remote_port\"")
 		err = errors.New("tunnel map is wrong: " + value)
 		return
 	}
 
-	localHost = L[1]
-	remoteHost = L[3]
 	switch L[0] {
 	case "r", "R":
 		reverse = true
@@ -206,11 +210,22 @@ func parseTunnel(value string) (localHost string, localPort int, remoteHost stri
 		err = errors.New("wrong tunnel map")
 		return
 	}
-	localPort, err = strconv.Atoi(L[2])
+
+	proto = strings.TrimSpace(strings.ToLower(L[1]))
+	if proto == "" {
+		proto = "tcp"
+	}
+	if !(proto == "tcp" || proto == "udp") {
+		err = errors.New("unknown protocol")
+		return
+	}
+	localHost = L[2]
+	remoteHost = L[4]
+	localPort, err = strconv.Atoi(L[3])
 	if err != nil {
 		return
 	}
-	remotePort, err = strconv.Atoi(L[4])
+	remotePort, err = strconv.Atoi(L[5])
 	if err != nil {
 		return
 	}

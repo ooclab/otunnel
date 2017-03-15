@@ -29,7 +29,7 @@ func handleAuth(c *pjson.Conn) error {
 	// 	return errors.New("not admin user")
 	// }
 
-	logrus.Debugf("handle auth, go request: %+v\n", m)
+	logrus.Debugf("handle auth, got request: %+v", m)
 	return c.Send(map[string]interface{}{
 		"link_id": 123456,
 		"hello":   "world",
