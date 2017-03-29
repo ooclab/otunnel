@@ -10,7 +10,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-const programVersion = "1.2.0"
+const programVersion = "1.2.1"
 
 var (
 	buildstamp = ""
