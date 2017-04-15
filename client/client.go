@@ -62,6 +62,8 @@ type Client struct {
 	// aes connection needed!
 	secret string
 
+	keepaliveInterval time.Duration
+
 	// tls connection needed!
 	caFile   string
 	keyFile  string
@@ -78,13 +80,14 @@ func newClient(c *cli.Context) (*Client, error) {
 	addr := c.Args().First()
 
 	client := &Client{
-		Proto:    c.String("proto"),
-		addr:     addr,
-		secret:   c.String("secret"),
-		caFile:   c.String("ca"),
-		certFile: c.String("cert"),
-		keyFile:  c.String("key"),
-		tunnels:  c.StringSlice("tunnel"),
+		Proto:             c.String("proto"),
+		addr:              addr,
+		secret:            c.String("secret"),
+		keepaliveInterval: time.Duration(c.Int("keepalive")) * time.Second,
+		caFile:            c.String("ca"),
+		certFile:          c.String("cert"),
+		keyFile:           c.String("key"),
+		tunnels:           c.StringSlice("tunnel"),
 	}
 
 	if len(client.secret) > 0 {
@@ -168,7 +171,10 @@ func (client *Client) startTCP() {
 			continue
 		}
 
-		l := link.NewLink(&link.LinkConfig{IsServerSide: false})
+		l := link.NewLink(&link.LinkConfig{
+			IsServerSide:      false,
+			KeepaliveInterval: client.keepaliveInterval,
+		})
 		go func() {
 			// FIXME!
 			time.Sleep(1 * time.Second)

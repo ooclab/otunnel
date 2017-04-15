@@ -27,6 +27,11 @@ var Command = cli.Command{
 			Name:  "t, tunnel",
 			Usage: "new tunnel",
 		},
+		cli.IntFlag{
+			Name:  "keepalive",
+			Value: 30,
+			Usage: "keepalive interval",
+		},
 	},
 	Action: func(c *cli.Context) {
 		if c.Bool("debug") {

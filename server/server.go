@@ -45,6 +45,8 @@ type Server struct {
 	// aes connection needed!
 	secret string
 
+	keepaliveInterval time.Duration
+
 	// tls connection needed!
 	caFile   string
 	keyFile  string
@@ -58,12 +60,13 @@ func newServer(c *cli.Context) *Server {
 	}
 
 	s := &Server{
-		Proto:    c.String("proto"),
-		addr:     addr,
-		secret:   c.String("secret"),
-		caFile:   c.String("ca"),
-		certFile: c.String("cert"),
-		keyFile:  c.String("key"),
+		Proto:             c.String("proto"),
+		addr:              addr,
+		secret:            c.String("secret"),
+		keepaliveInterval: time.Duration(c.Int("keepalive")) * time.Second,
+		caFile:            c.String("ca"),
+		certFile:          c.String("cert"),
+		keyFile:           c.String("key"),
 	}
 
 	if len(s.secret) > 0 {
@@ -143,7 +146,10 @@ func (s *Server) startTCP() {
 
 func (s *Server) handleTCPClient(conn es.Conn) {
 	// client_name := conn.((*net.TCPConn)).RemoteAddr()
-	l := link.NewLink(&link.LinkConfig{IsServerSide: true})
+	l := link.NewLink(&link.LinkConfig{
+		IsServerSide:      true,
+		KeepaliveInterval: s.keepaliveInterval,
+	})
 	l.Bind(conn)
 
 	// client 断开连接

@@ -24,6 +24,11 @@ var Command = cli.Command{
 			Value: "",
 			Usage: "secret phrase",
 		},
+		cli.IntFlag{
+			Name:  "keepalive",
+			Value: 30,
+			Usage: "keepalive interval",
+		},
 	},
 	Action: func(c *cli.Context) {
 		if c.Bool("debug") {
