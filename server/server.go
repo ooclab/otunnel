@@ -150,8 +150,10 @@ func (s *Server) handleTCPClient(conn es.Conn) {
 		IsServerSide:      true,
 		KeepaliveInterval: s.keepaliveInterval,
 	})
-	l.Bind(conn)
-
+	errCh, _ := l.Bind(conn)
+	if err := <-errCh; err != nil {
+		logrus.WithField("error", err).Error("connection error")
+	}
 	// client 断开连接
 	logrus.Warnf("client %#v is offline", conn)
 	l.Close()
