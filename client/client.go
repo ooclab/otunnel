@@ -175,7 +175,7 @@ func (client *Client) startTCP() {
 			IsServerSide:      false,
 			KeepaliveInterval: client.keepaliveInterval,
 		})
-		errCh, _ := l.Bind(conn)
+		l.Bind(conn)
 
 		for _, t := range client.tunnels {
 			proto, localHost, localPort, remoteHost, remotePort, reverse, err := parseTunnel(t)
@@ -185,9 +185,7 @@ func (client *Client) startTCP() {
 			l.OpenTunnel(proto, localHost, localPort, remoteHost, remotePort, reverse)
 		}
 
-		if err := <-errCh; err != nil {
-			logrus.WithField("error", err).Error("connection error")
-		}
+		l.Wait()
 		l.Close()
 		time.Sleep(1 * time.Second) // TODO: sleep smartly
 	}
