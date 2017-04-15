@@ -13,7 +13,7 @@ LDFLAGS=-ldflags "-s -X main.buildstamp=`date '+%Y-%m-%d_%H:%M:%S_%z'` -X main.g
 PROGRAM_NAME=otunnel
 
 all:
-	$(GOBUILD) -v $(LDFLAGS) -o $(PROGRAM_NAME)
+	cd cmd/otunnel; $(GOBUILD) -v $(LDFLAGS) -o $(PROGRAM_NAME)
 
 install:
 	$(GOINSTALL) -v

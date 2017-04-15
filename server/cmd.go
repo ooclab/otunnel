@@ -25,6 +25,14 @@ var Command = cli.Command{
 			Usage: "secret phrase",
 		},
 		cli.IntFlag{
+			Name:  "keyiter",
+			Usage: "key iter times for pbkdf2",
+		},
+		cli.IntFlag{
+			Name:  "keylen",
+			Usage: "key length for pbkdf2",
+		},
+		cli.IntFlag{
 			Name:  "keepalive",
 			Value: 30,
 			Usage: "keepalive interval",
