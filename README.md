@@ -8,6 +8,48 @@ otunnel is a simple safe tunnel for peer-to-peer
 make
 ```
 
+OR
+
+```
+./build-by-docker.sh
+```
+
+
+### use `go build`
+
+```
+cd cmd/otunnel
+```
+
+```
+go build -v
+```
+
+build a static bin:
+
+```
+$ CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v
+$ ldd otunnel 
+        not a dynamic executable
+```
+
+
+### use gox
+
+```
+cd cmd/otunnel
+```
+
+```
+gox
+```
+
+OR
+
+```
+gox -ldflags "-s -X main.buildstamp=`date '+%Y-%m-%d_%H:%M:%S_%z'` -X main.githash=`git rev-parse HEAD`" 
+```
+
 ## Usage
 
 Start a server at a public server ( example.com ):
