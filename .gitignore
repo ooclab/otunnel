@@ -25,3 +25,4 @@ _testmain.go
 
 glide.lock
 otunnel
+!vendor/github.com/ooclab/otunnel
