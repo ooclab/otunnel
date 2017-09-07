@@ -4,42 +4,14 @@ otunnel is a simple safe tunnel for peer-to-peer
 
 ## Build
 
-```
-make
-```
-
-OR
+There are many method to build otunnel:
 
 ```
-./build-by-docker.sh
-```
-
-
-### use `go build`
-
-```
-go build -v
-```
-
-build a static bin:
-
-```
-$ CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v
-$ ldd otunnel
-        not a dynamic executable
-```
-
-
-### use gox
-
-```
-gox
-```
-
-OR
-
-```
-gox -ldflags "-s -X main.buildstamp=`date '+%Y-%m-%d_%H:%M:%S_%z'` -X main.githash=`git rev-parse HEAD`"
+$ make                    # normal build
+$ make static             # build a static program
+$ go build -v             # the go build
+$ gox                     # cross build
+$ ./build-by-docker.sh    # use docker to run build
 ```
 
 ## Usage
@@ -60,7 +32,7 @@ Now, anyone can access your `LOCAL_HOST:LOCAL_PORT` by `example.com:REMOTE_PORT`
 
 ## Document
 
-[Wiki/手册](https://github.com/ooclab/otunnel/wiki)
+[Wiki / 手册](https://github.com/ooclab/otunnel/wiki)
 
 ## Download
 
