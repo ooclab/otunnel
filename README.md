@@ -18,10 +18,6 @@ OR
 ### use `go build`
 
 ```
-cd cmd/otunnel
-```
-
-```
 go build -v
 ```
 
@@ -29,16 +25,12 @@ build a static bin:
 
 ```
 $ CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v
-$ ldd otunnel 
+$ ldd otunnel
         not a dynamic executable
 ```
 
 
 ### use gox
-
-```
-cd cmd/otunnel
-```
 
 ```
 gox
@@ -47,7 +39,7 @@ gox
 OR
 
 ```
-gox -ldflags "-s -X main.buildstamp=`date '+%Y-%m-%d_%H:%M:%S_%z'` -X main.githash=`git rev-parse HEAD`" 
+gox -ldflags "-s -X main.buildstamp=`date '+%Y-%m-%d_%H:%M:%S_%z'` -X main.githash=`git rev-parse HEAD`"
 ```
 
 ## Usage
@@ -77,7 +69,7 @@ Now, anyone can access your `LOCAL_HOST:LOCAL_PORT` by `example.com:REMOTE_PORT`
 For example:
 
 ```
-wget http://dl.ooclab.com/otunnel/1.1.0/otunnel_linux_amd64.xz
+wget http://dl.ooclab.com/otunnel/1.2.3/otunnel_linux_amd64.xz
 unxz otunnel_linux_amd64.xz
 chmod a+x otunnel_linux_amd64
 mv otunnel_linux_amd64 otunnel
@@ -86,4 +78,3 @@ mv otunnel_linux_amd64 otunnel
 ## Help
 
 Please send issues to [github.com/ooclab/otunnel/issues](https://github.com/ooclab/otunnel/issues) .
-

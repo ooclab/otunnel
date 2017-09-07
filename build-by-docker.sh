@@ -1,8 +1,4 @@
 #!/bin/bash
 
-if [ "x$GOPATH" == "x" ]; then
-    echo "set GOPATH first!"
-    exit 1
-fi
-
-docker run -it --rm -v $GOPATH:/go -v $PWD:/work -w /work golang make $@
+WORKDIR=/go/src/github.com/ooclab/otunnel
+docker run -it --rm -v $PWD:$WORKDIR -w $WORKDIR golang make $@
