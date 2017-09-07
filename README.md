@@ -4,14 +4,25 @@ otunnel is a simple safe tunnel for peer-to-peer
 
 ## Build
 
-There are many method to build otunnel:
+simple build (RECOMMENDED):
 
 ```
+$ ./build-by-docker.sh
+```
+
+others:
+
+```
+$ go get -v github.com/ooclab/otunnel
+$ export GOPATH=${GOPATH:-~/go}
+$ cd $GOPATH/src/github.com/ooclab/otunnel
+
+$ # use any of following commands to build otunnel
+
 $ make                    # normal build
 $ make static             # build a static program
 $ go build -v             # the go build
-$ gox                     # cross build
-$ ./build-by-docker.sh    # use docker to run build
+$ gox                     # simple cross build, you should install gox first!
 ```
 
 ## Usage
