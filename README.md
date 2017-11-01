@@ -41,6 +41,20 @@ Start a client (reverse forward):
 
 Now, anyone can access your `LOCAL_HOST:LOCAL_PORT` by `example.com:REMOTE_PORT`.
 
+## Docker
+
+Run a server:
+
+```
+docker run --rm -it -p 20000:10000 ooclab/otunnel-amd64 /otunnel listen :10000 -d -s abc123
+```
+
+Run a client:
+
+```
+docker run --rm -it --net=host ooclab/otunnel-amd64 /otunnel connect SERVER_IP:20000 -d -s abc123 -t 'f:127.0.0.1:10022:HOST_IP:HOST_PORT'
+```
+
 ## Document
 
 [Wiki / 手册](https://github.com/ooclab/otunnel/wiki)
