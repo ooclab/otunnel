@@ -3,7 +3,7 @@ package channel
 import (
 	"net"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 func closeConn(conn net.Conn) {

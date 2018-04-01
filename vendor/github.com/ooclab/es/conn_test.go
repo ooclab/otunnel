@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/ooclab/es/ecrypt"
+	"github.com/sirupsen/logrus"
 )
 
 func testEcho(conn Conn) error {

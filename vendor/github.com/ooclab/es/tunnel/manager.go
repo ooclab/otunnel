@@ -3,11 +3,13 @@ package tunnel
 import (
 	"errors"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/ooclab/es/session"
 	tcommon "github.com/ooclab/es/tunnel/common"
 )
+
+var globalListenPool = newListenPool()
 
 type Manager struct {
 	pool           *Pool
@@ -19,7 +21,7 @@ type Manager struct {
 func NewManager(isServerSide bool, outbound chan []byte, sm *session.Manager) *Manager {
 	return &Manager{
 		pool:           NewPool(isServerSide),
-		lpool:          newListenPool(),
+		lpool:          globalListenPool,
 		outbound:       outbound,
 		sessionManager: sm,
 	}

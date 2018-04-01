@@ -6,11 +6,11 @@ import (
 	"net"
 	"strings"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/ooclab/es"
 	"github.com/ooclab/es/tunnel/channel"
 	tcommon "github.com/ooclab/es/tunnel/common"
 	"github.com/ooclab/es/util"
+	"github.com/sirupsen/logrus"
 )
 
 type TunnelConfig struct {
