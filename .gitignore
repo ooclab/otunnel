@@ -23,6 +23,6 @@ _testmain.go
 *.test
 *.prof
 
-glide.lock
-otunnel
+.DS_Store
+otunnel*
 !vendor/github.com/ooclab/otunnel
