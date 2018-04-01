@@ -7,9 +7,9 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/ooclab/es"
 	"github.com/ooclab/es/link"
+	"github.com/sirupsen/logrus"
 )
 
 // For test

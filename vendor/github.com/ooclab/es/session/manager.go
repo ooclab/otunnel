@@ -3,8 +3,8 @@ package session
 import (
 	"errors"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/ooclab/es"
+	"github.com/sirupsen/logrus"
 )
 
 type Manager struct {

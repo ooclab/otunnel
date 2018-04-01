@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/ooclab/es"
 	"github.com/ooclab/es/session"
 	"github.com/ooclab/es/tunnel"
+	"github.com/sirupsen/logrus"
 )
 
 // Define error

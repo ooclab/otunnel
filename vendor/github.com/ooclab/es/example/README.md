@@ -1,7 +1,7 @@
 setup:
 
 ```
-go get -v -u github.com/Sirupsen/logrus
+go get -v -u github.com/sirupsen/logrus
 go get -v -u github.com/jmoiron/jsonq
 
 go get -v -u github.com/ooclab/es

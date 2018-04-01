@@ -8,9 +8,9 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/ooclab/es"
 	"github.com/ooclab/es/util"
+	"github.com/sirupsen/logrus"
 
 	tcommon "github.com/ooclab/es/tunnel/common"
 )
