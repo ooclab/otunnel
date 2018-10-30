@@ -25,4 +25,3 @@ _testmain.go
 
 .DS_Store
 otunnel*
-!vendor/github.com/ooclab/otunnel
