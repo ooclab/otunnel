@@ -61,7 +61,10 @@ func defaultTunnelCreateHandler(manager *tunnel.Manager) session.RequestHandlerF
 		cfg := &tunnel.TunnelConfig{}
 		if err = json.Unmarshal(r.Body, &cfg); err != nil {
 			logrus.Errorf("tunnel create: unmarshal tunnel config failed: %s", err)
-			resp.Status = "load-tunnel-map-error"
+			resp = &session.Response{
+				Status: "load-tunnel-map-error",
+				Body:   nil,
+			}
 			return
 		}
 
@@ -70,7 +73,10 @@ func defaultTunnelCreateHandler(manager *tunnel.Manager) session.RequestHandlerF
 		t, err := manager.TunnelCreate(cfg)
 		if err != nil {
 			logrus.Errorf("create tunnel failed: %s", err)
-			resp.Status = "create-tunnel-failed"
+			resp = &session.Response{
+				Status: "create-tunnel-failed",
+				Body:   nil,
+			}
 			return
 		}
 

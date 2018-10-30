@@ -53,7 +53,10 @@ func Benchmark_LinkInnerSessionMulti(b *testing.B) {
 }
 
 func Test_LinkInnerSessionMinimalFrame(t *testing.T) {
-	_, clientLink, _ := getServerAndClient()
+	_, clientLink, err := getServerAndClient()
+	if err != nil {
+		t.Error(err)
+	}
 
 	s, _ := clientLink.NewSession()
 	for i := 0; i < 1025; i++ {

@@ -46,9 +46,13 @@ func getServerAndClient() (serverLink *link.Link, clientLink *link.Link, err err
 				l := link.NewLink(nil)
 				serverLinkCh <- l
 				ec := es.NewBaseConn(conn)
-				l.Bind(ec)
-				l.Close()
-				fmt.Println("link quit: ", err)
+				if err := l.Bind(ec); err != nil {
+					logrus.Errorf("link bind failed: %s", err)
+				}
+				l.Wait()
+				if err := l.Close(); err != nil {
+					logrus.Errorf("link quit: ", err)
+				}
 			}()
 		}
 	}()
@@ -86,8 +90,10 @@ func connectServer(addr string) *link.Link {
 	ec := es.NewBaseConn(conn)
 	// FIXME: quit it not a good choice for testcase!
 	go func() {
-		l.Bind(ec)
-		fmt.Println("link quit: ", err)
+		if err := l.Bind(ec); err != nil {
+			logrus.Errorf("link quit: ", err)
+		}
+		l.Wait()
 		l.Close()
 	}()
 	return l
