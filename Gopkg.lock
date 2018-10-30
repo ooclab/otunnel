@@ -3,6 +3,7 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:3424c0d8d34a8809abc9ce90006be8b2592bf5e1457171edc966bb2fd10719b3"
   name = "github.com/ooclab/es"
   packages = [
     ".",
@@ -12,43 +13,59 @@
     "tunnel",
     "tunnel/channel",
     "tunnel/common",
-    "util"
+    "util",
   ]
+  pruneopts = ""
   revision = "9b73874c4ed877113f5b5fa7cf8523fd3b9cd2a5"
 
 [[projects]]
+  digest = "1:8cf46b6c18a91068d446e26b67512cf16f1540b45d90b28b9533706a127f0ca6"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
+  pruneopts = ""
   revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
   version = "v1.0.5"
 
 [[projects]]
+  digest = "1:e85837cb04b78f61688c6eba93ea9d14f60d611e2aaf8319999b1a60d2dafbfa"
   name = "github.com/urfave/cli"
   packages = ["."]
+  pruneopts = ""
   revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
   version = "v1.20.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:8e68f35fec8ffd5ebb48e9f615b4ca5fa53aad5ee5f241a71210598f51634eb0"
   name = "golang.org/x/crypto"
   packages = [
     "pbkdf2",
-    "ssh/terminal"
+    "ssh/terminal",
   ]
+  pruneopts = ""
   revision = "12892e8c234f4fe6f6803f052061de9057903bb2"
 
 [[projects]]
   branch = "master"
+  digest = "1:e80ec2e647548e8fd36bb104d39220f162b72f9222507f0fc1d5f0b7618a5e9f"
   name = "golang.org/x/sys"
   packages = [
     "unix",
-    "windows"
+    "windows",
   ]
+  pruneopts = ""
   revision = "378d26f46672a356c46195c28f61bdb4c0a781dd"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "18a5fb1af424c76985d748f976a395a588e5a3f783858bc2a9616ad90aaa6891"
+  input-imports = [
+    "github.com/ooclab/es",
+    "github.com/ooclab/es/ecrypt",
+    "github.com/ooclab/es/link",
+    "github.com/sirupsen/logrus",
+    "github.com/urfave/cli",
+    "golang.org/x/crypto/pbkdf2",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
