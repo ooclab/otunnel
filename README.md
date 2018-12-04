@@ -25,6 +25,16 @@ $ go build -v             # the go build
 $ gox                     # simple cross build, you should install gox first!
 ```
 
+### Platform Example
+
+#### dd-wrt
+
+Netgear WNDR4300 (Firmware: DD-WRT v3.0-r37882 std (11/30/18))
+
+```
+GOOS=linux GOARCH=mips GOMIPS=softfloat go build -a -ldflags '-s -w'
+```
+
 ## Usage
 
 Start a server at a public server ( example.com ):
