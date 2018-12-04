@@ -19,3 +19,6 @@ GOOS=linux GOARCH=mips GOMIPS=softfloat go build -a -ldflags '-s -w'
 
 - [go-makefile-dd-wrt](https://github.com/lostinblue/go-makefile-dd-wrt) 注意：我仅参考使用了里面的 `GOMIPS=softfloat` 编译项，其他未测试
 - [Go 语言跨平台路由器编译](https://blog.lutty.me/code/2017-04/golang-cross-compile-openwrt-ddwrt-build.html)
+- [用面向 DD-WRT 的高级提示和技巧向无线路由器添加 Linux 功能](https://www.ibm.com/developerworks/cn/linux/l-wifisecureddwrt/index.html)
+- [Journalling Flash File System](https://wiki.dd-wrt.com/wiki/index.php/JFFS)
+- [USB Storage](https://wiki.dd-wrt.com/wiki/index.php/USB_storage)
