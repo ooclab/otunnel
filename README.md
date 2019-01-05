@@ -51,6 +51,50 @@ Start a client (reverse forward):
 
 Now, anyone can access your `LOCAL_HOST:LOCAL_PORT` by `example.com:REMOTE_PORT`.
 
+## SystemD
+
+In the server side (listen a port) , create `/etc/systemd/system/otunnel-listen.service` :
+
+```
+[Unit]
+Description=Otunnel Listen Service
+After=network.target
+
+[Service]
+Type=simple
+Restart=on-failure
+ExecStart=/usr/local/bin/otunnel listen :20000 -d -s THE_SECRET
+
+[Install]
+WantedBy=multi-user.target
+```
+
+start `otunnel-listen` service:
+```
+systemctl start otunnel-listen
+```
+
+In the client side, create `/etc/systemd/system/otunnel-connect.service` :
+
+```
+[Unit]
+Description=Otunnel Connect Service
+After=network.target
+
+[Service]
+Type=simple
+Restart=on-failure
+ExecStart=/usr/local/bin/otunnel connect YOUR_SERVER_IP:20000 -d -s THE_SECRET -t "r:127.0.0.1:22::50022"
+
+[Install]
+WantedBy=multi-user.target
+```
+
+start `otunnel-connect` service:
+```
+systemctl start otunnel-connect
+```
+
 ## Docker
 
 Run a server:

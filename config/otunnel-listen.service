@@ -1,0 +1,11 @@
+[Unit]
+Description=Otunnel Listen Service
+After=network.target
+
+[Service]
+Type=simple
+Restart=on-failure
+ExecStart=/usr/local/bin/otunnel listen :20000 -d -s THE_SECRET
+
+[Install]
+WantedBy=multi-user.target
