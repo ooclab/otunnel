@@ -177,16 +177,24 @@ func (client *Client) startTCP() {
 			KeepaliveInterval: client.keepaliveInterval,
 		})
 		l.Bind(conn)
-		defer l.Close()
+
+		hasTunnel := false
 		for _, t := range client.tunnels {
 			proto, localHost, localPort, remoteHost, remotePort, reverse, err := parseTunnel(t)
 			if err != nil {
-				logrus.Fatalf("parse tunnel failed: %s", err)
+				logrus.Errorf("parse tunnel failed(%s): %s", t, err)
+				continue
 			}
+			hasTunnel = true
 			l.OpenTunnel(proto, localHost, localPort, remoteHost, remotePort, reverse)
 		}
 
-		l.Wait()
+		if !hasTunnel {
+			logrus.Warn("no valid tunnel configured, reconnect later")
+		} else {
+			l.Wait()
+		}
+		l.Close()
 		time.Sleep(1 * time.Second) // TODO: sleep smartly
 	}
 
