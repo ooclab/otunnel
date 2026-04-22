@@ -13,9 +13,9 @@ $ ./build-by-docker.sh
 others:
 
 ```
-$ go get -v github.com/ooclab/otunnel
-$ export GOPATH=${GOPATH:-~/go}
-$ cd $GOPATH/src/github.com/ooclab/otunnel
+$ git clone https://github.com/ooclab/otunnel.git
+$ cd otunnel
+$ go mod tidy
 
 $ # use any of following commands to build otunnel
 

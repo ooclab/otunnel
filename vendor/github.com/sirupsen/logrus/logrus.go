@@ -6,30 +6,21 @@ import (
 	"strings"
 )
 
-// Fields type, used to pass to `WithFields`.
+// Fields type, used to pass to [WithFields].
 type Fields map[string]interface{}
 
 // Level type
+//
+//nolint:recvcheck // the methods of "Entry" use pointer receiver and non-pointer receiver.
 type Level uint32
 
-// Convert the Level to a string. E.g. PanicLevel becomes "panic".
+// Convert the Level to a string. E.g. [PanicLevel] becomes "panic".
 func (level Level) String() string {
-	switch level {
-	case DebugLevel:
-		return "debug"
-	case InfoLevel:
-		return "info"
-	case WarnLevel:
-		return "warning"
-	case ErrorLevel:
-		return "error"
-	case FatalLevel:
-		return "fatal"
-	case PanicLevel:
-		return "panic"
+	if b, err := level.MarshalText(); err == nil {
+		return string(b)
+	} else {
+		return "unknown"
 	}
-
-	return "unknown"
 }
 
 // ParseLevel takes a string level and returns the Logrus log level constant.
@@ -47,13 +38,48 @@ func ParseLevel(lvl string) (Level, error) {
 		return InfoLevel, nil
 	case "debug":
 		return DebugLevel, nil
+	case "trace":
+		return TraceLevel, nil
 	}
 
 	var l Level
 	return l, fmt.Errorf("not a valid logrus Level: %q", lvl)
 }
 
-// A constant exposing all logging levels
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (level *Level) UnmarshalText(text []byte) error {
+	l, err := ParseLevel(string(text))
+	if err != nil {
+		return err
+	}
+
+	*level = l
+
+	return nil
+}
+
+func (level Level) MarshalText() ([]byte, error) {
+	switch level {
+	case TraceLevel:
+		return []byte("trace"), nil
+	case DebugLevel:
+		return []byte("debug"), nil
+	case InfoLevel:
+		return []byte("info"), nil
+	case WarnLevel:
+		return []byte("warning"), nil
+	case ErrorLevel:
+		return []byte("error"), nil
+	case FatalLevel:
+		return []byte("fatal"), nil
+	case PanicLevel:
+		return []byte("panic"), nil
+	}
+
+	return nil, fmt.Errorf("not a valid logrus level %d", level)
+}
+
+// AllLevels exposing all logging levels.
 var AllLevels = []Level{
 	PanicLevel,
 	FatalLevel,
@@ -61,6 +87,7 @@ var AllLevels = []Level{
 	WarnLevel,
 	InfoLevel,
 	DebugLevel,
+	TraceLevel,
 }
 
 // These are the different logging levels. You can set the logging level to log
@@ -69,7 +96,7 @@ const (
 	// PanicLevel level, highest level of severity. Logs and then calls panic with the
 	// message passed to Debug, Info, ...
 	PanicLevel Level = iota
-	// FatalLevel level. Logs and then calls `os.Exit(1)`. It will exit even if the
+	// FatalLevel level. Logs and then calls `logger.Exit(1)`. It will exit even if the
 	// logging level is set to Panic.
 	FatalLevel
 	// ErrorLevel level. Logs. Used for errors that should definitely be noted.
@@ -82,6 +109,8 @@ const (
 	InfoLevel
 	// DebugLevel level. Usually only enabled when debugging. Very verbose logging.
 	DebugLevel
+	// TraceLevel level. Designates finer-grained informational events than the Debug.
+	TraceLevel
 )
 
 // Won't compile if StdLogger can't be realized by a log.Logger
@@ -92,8 +121,8 @@ var (
 )
 
 // StdLogger is what your logrus-enabled library should take, that way
-// it'll accept a stdlib logger and a logrus logger. There's no standard
-// interface, this is the closest we get, unfortunately.
+// it'll accept a stdlib logger ([log.Logger]) and a logrus logger.
+// There's no standard interface, so this is the closest we get, unfortunately.
 type StdLogger interface {
 	Print(...interface{})
 	Printf(string, ...interface{})
@@ -108,7 +137,8 @@ type StdLogger interface {
 	Panicln(...interface{})
 }
 
-// The FieldLogger interface generalizes the Entry and Logger types
+// FieldLogger extends the [StdLogger] interface, generalizing
+// the [Entry] and [Logger] types.
 type FieldLogger interface {
 	WithField(key string, value interface{}) *Entry
 	WithFields(fields Fields) *Entry
@@ -147,4 +177,14 @@ type FieldLogger interface {
 	// IsErrorEnabled() bool
 	// IsFatalEnabled() bool
 	// IsPanicEnabled() bool
+}
+
+// Ext1FieldLogger (the first extension to [FieldLogger]) is superfluous, it is
+// here for consistency. Do not use. Use [FieldLogger], [Logger] or [Entry]
+// instead.
+type Ext1FieldLogger interface {
+	FieldLogger
+	Tracef(format string, args ...interface{})
+	Trace(args ...interface{})
+	Traceln(args ...interface{})
 }

@@ -1,7 +1,27 @@
-# Logrus <img src="http://i.imgur.com/hTeVwmJ.png" width="40" height="40" alt=":walrus:" class="emoji" title=":walrus:"/>&nbsp;[![Build Status](https://travis-ci.org/sirupsen/logrus.svg?branch=master)](https://travis-ci.org/sirupsen/logrus)&nbsp;[![GoDoc](https://godoc.org/github.com/sirupsen/logrus?status.svg)](https://godoc.org/github.com/sirupsen/logrus)
+# Logrus <img src="http://i.imgur.com/hTeVwmJ.png" width="40" height="40" alt=":walrus:" class="emoji" title=":walrus:"/> [![Build Status](https://github.com/sirupsen/logrus/workflows/CI/badge.svg)](https://github.com/sirupsen/logrus/actions?query=workflow%3ACI) [![Go Reference](https://pkg.go.dev/badge/github.com/sirupsen/logrus.svg)](https://pkg.go.dev/github.com/sirupsen/logrus)
 
 Logrus is a structured logger for Go (golang), completely API compatible with
 the standard library logger.
+
+**Logrus is in maintenance-mode.** We will not be introducing new features. It's
+simply too hard to do in a way that won't break many people's projects, which is
+the last thing you want from your Logging library (again...).
+
+This does not mean Logrus is dead. Logrus will continue to be maintained for
+security, (backwards compatible) bug fixes, and performance (where we are
+limited by the interface).
+
+I believe Logrus' biggest contribution is to have played a part in today's
+widespread use of structured logging in Golang. There doesn't seem to be a
+reason to do a major, breaking iteration into Logrus V2, since the fantastic Go
+community has built those independently. Many fantastic alternatives have sprung
+up. Logrus would look like those, had it been re-designed with what we know
+about structured logging in Go today. Check out, for example,
+[Zerolog][zerolog], [Zap][zap], and [Apex][apex].
+
+[zerolog]: https://github.com/rs/zerolog
+[zap]: https://github.com/uber-go/zap
+[apex]: https://github.com/apex/log
 
 **Seeing weird case-sensitive problems?** It's in the past been possible to
 import Logrus as both upper- and lower-case. Due to the Go package environment,
@@ -15,20 +35,15 @@ comments](https://github.com/sirupsen/logrus/issues/553#issuecomment-306591437).
 For an in-depth explanation of the casing issue, see [this
 comment](https://github.com/sirupsen/logrus/issues/570#issuecomment-313933276).
 
-**Are you interested in assisting in maintaining Logrus?** Currently I have a
-lot of obligations, and I am unable to provide Logrus with the maintainership it
-needs. If you'd like to help, please reach out to me at `simon at author's
-username dot com`.
-
 Nicely color-coded in development (when a TTY is attached, otherwise just
 plain text):
 
 ![Colored](http://i.imgur.com/PY7qMwd.png)
 
-With `log.SetFormatter(&log.JSONFormatter{})`, for easy parsing by logstash
+With `logrus.SetFormatter(&logrus.JSONFormatter{})`, for easy parsing by logstash
 or Splunk:
 
-```json
+```text
 {"animal":"walrus","level":"info","msg":"A group of walrus emerges from the
 ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
 
@@ -45,9 +60,9 @@ ocean","size":10,"time":"2014-03-10 19:57:38.562264131 -0400 EDT"}
 "time":"2014-03-10 19:57:38.562543128 -0400 EDT"}
 ```
 
-With the default `log.SetFormatter(&log.TextFormatter{})` when a TTY is not
+With the default `logrus.SetFormatter(&logrus.TextFormatter{})` when a TTY is not
 attached, the output is compatible with the
-[logfmt](http://godoc.org/github.com/kr/logfmt) format:
+[logfmt](https://pkg.go.dev/github.com/kr/logfmt) format:
 
 ```text
 time="2015-03-26T01:27:38-04:00" level=debug msg="Started observing beach" animal=walrus number=8
@@ -56,7 +71,39 @@ time="2015-03-26T01:27:38-04:00" level=warning msg="The group's number increased
 time="2015-03-26T01:27:38-04:00" level=debug msg="Temperature changes" temperature=-4
 time="2015-03-26T01:27:38-04:00" level=panic msg="It's over 9000!" animal=orca size=9009
 time="2015-03-26T01:27:38-04:00" level=fatal msg="The ice breaks!" err=&{0x2082280c0 map[animal:orca size:9009] 2015-03-26 01:27:38.441574009 -0400 EDT panic It's over 9000!} number=100 omg=true
-exit status 1
+```
+To ensure this behaviour even if a TTY is attached, set your formatter as follows:
+
+```go
+logrus.SetFormatter(&logrus.TextFormatter{
+    DisableColors: true,
+    FullTimestamp: true,
+})
+```
+
+#### Logging Method Name
+
+If you wish to add the calling method as a field, instruct the logger via:
+
+```go
+logrus.SetReportCaller(true)
+```
+This adds the caller as 'method' like so:
+
+```json
+{"animal":"penguin","level":"fatal","method":"github.com/sirupsen/arcticcreatures.migrate","msg":"a penguin swims by",
+"time":"2014-03-10 19:57:38.562543129 -0400 EDT"}
+```
+
+```text
+time="2015-03-26T01:27:38-04:00" level=fatal method=github.com/sirupsen/arcticcreatures.migrate msg="a penguin swims by" animal=penguin
+```
+Note that this does add measurable overhead - the cost will depend on the version of Go, but is
+between 20 and 40% in recent tests with 1.6 and 1.7.  You can validate this in your
+environment via benchmarks:
+
+```bash
+go test -bench=.*CallerTracing
 ```
 
 #### Case-sensitivity
@@ -72,12 +119,10 @@ The simplest way to use Logrus is simply the package-level exported logger:
 ```go
 package main
 
-import (
-  log "github.com/sirupsen/logrus"
-)
+import "github.com/sirupsen/logrus"
 
 func main() {
-  log.WithFields(log.Fields{
+  logrus.WithFields(logrus.Fields{
     "animal": "walrus",
   }).Info("A walrus appears")
 }
@@ -93,6 +138,7 @@ package main
 
 import (
   "os"
+
   log "github.com/sirupsen/logrus"
 )
 
@@ -144,26 +190,27 @@ package main
 
 import (
   "os"
+
   "github.com/sirupsen/logrus"
 )
 
 // Create a new instance of the logger. You can have any number of instances.
-var log = logrus.New()
+var logger = logrus.New()
 
 func main() {
   // The API for setting attributes is a little different than the package level
-  // exported logger. See Godoc.
-  log.Out = os.Stdout
+  // exported logger. See Godoc. 
+  logger.Out = os.Stdout
 
   // You could set this to any `io.Writer` such as a file
-  // file, err := os.OpenFile("logrus.log", os.O_CREATE|os.O_WRONLY, 0666)
+  // file, err := os.OpenFile("logrus.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
   // if err == nil {
-  //  log.Out = file
+  //  logger.Out = file
   // } else {
-  //  log.Info("Failed to log to file, using default stderr")
+  //  logger.Info("Failed to log to file, using default stderr")
   // }
 
-  log.WithFields(logrus.Fields{
+  logger.WithFields(logrus.Fields{
     "animal": "walrus",
     "size":   10,
   }).Info("A group of walrus emerges from the ocean")
@@ -173,12 +220,12 @@ func main() {
 #### Fields
 
 Logrus encourages careful, structured logging through logging fields instead of
-long, unparseable error messages. For example, instead of: `log.Fatalf("Failed
+long, unparseable error messages. For example, instead of: `logrus.Fatalf("Failed
 to send event %s to topic %s with key %d")`, you should log the much more
 discoverable:
 
 ```go
-log.WithFields(log.Fields{
+logrus.WithFields(logrus.Fields{
   "event": event,
   "topic": topic,
   "key": key,
@@ -199,12 +246,12 @@ seen as a hint you should add a field, however, you can still use the
 Often it's helpful to have fields _always_ attached to log statements in an
 application or parts of one. For example, you may want to always log the
 `request_id` and `user_ip` in the context of a request. Instead of writing
-`log.WithFields(log.Fields{"request_id": request_id, "user_ip": user_ip})` on
+`logger.WithFields(logrus.Fields{"request_id": request_id, "user_ip": user_ip})` on
 every line, you can create a `logrus.Entry` to pass around instead:
 
 ```go
-requestLogger := log.WithFields(log.Fields{"request_id": request_id, "user_ip": user_ip})
-requestLogger.Info("something happened on that request") # will log request_id and user_ip
+requestLogger := logger.WithFields(logrus.Fields{"request_id": request_id, "user_ip": user_ip})
+requestLogger.Info("something happened on that request") // will log request_id and user_ip
 requestLogger.Warn("something not great happened")
 ```
 
@@ -218,45 +265,49 @@ Logrus comes with [built-in hooks](hooks/). Add those, or your custom hook, in
 `init`:
 
 ```go
+package main
+
 import (
-  log "github.com/sirupsen/logrus"
-  "gopkg.in/gemnasium/logrus-airbrake-hook.v2" // the package is named "airbrake"
-  logrus_syslog "github.com/sirupsen/logrus/hooks/syslog"
   "log/syslog"
+
+  "github.com/sirupsen/logrus"
+  airbrake "gopkg.in/gemnasium/logrus-airbrake-hook.v2"
+  logrus_syslog "github.com/sirupsen/logrus/hooks/syslog"
 )
 
 func init() {
 
   // Use the Airbrake hook to report errors that have Error severity or above to
   // an exception tracker. You can create custom hooks, see the Hooks section.
-  log.AddHook(airbrake.NewHook(123, "xyz", "production"))
+  logrus.AddHook(airbrake.NewHook(123, "xyz", "production"))
 
   hook, err := logrus_syslog.NewSyslogHook("udp", "localhost:514", syslog.LOG_INFO, "")
   if err != nil {
-    log.Error("Unable to connect to local syslog daemon")
+    logrus.Error("Unable to connect to local syslog daemon")
   } else {
-    log.AddHook(hook)
+    logrus.AddHook(hook)
   }
 }
 ```
-Note: Syslog hook also support connecting to local syslog (Ex. "/dev/log" or "/var/run/syslog" or "/var/run/log"). For the detail, please check the [syslog hook README](hooks/syslog/README.md).
+Note: Syslog hooks also support connecting to local syslog (Ex. "/dev/log" or "/var/run/syslog" or "/var/run/log"). For the detail, please check the [syslog hook README](hooks/syslog/README.md).
 
-A list of currently known of service hook can be found in this wiki [page](https://github.com/sirupsen/logrus/wiki/Hooks)
+A list of currently known service hooks can be found in this wiki [page](https://github.com/sirupsen/logrus/wiki/Hooks)
 
 
 #### Level logging
 
-Logrus has six logging levels: Debug, Info, Warning, Error, Fatal and Panic.
+Logrus has seven logging levels: Trace, Debug, Info, Warning, Error, Fatal and Panic.
 
 ```go
-log.Debug("Useful debugging information.")
-log.Info("Something noteworthy happened!")
-log.Warn("You should probably take a look at this.")
-log.Error("Something failed but I'm not quitting.")
+logrus.Trace("Something very low level.")
+logrus.Debug("Useful debugging information.")
+logrus.Info("Something noteworthy happened!")
+logrus.Warn("You should probably take a look at this.")
+logrus.Error("Something failed but I'm not quitting.")
 // Calls os.Exit(1) after logging
-log.Fatal("Bye.")
+logrus.Fatal("Bye.")
 // Calls panic() after logging
-log.Panic("I'm bailing.")
+logrus.Panic("I'm bailing.")
 ```
 
 You can set the logging level on a `Logger`, then it will only log entries with
@@ -264,11 +315,13 @@ that severity or anything above it:
 
 ```go
 // Will log anything that is info or above (warn, error, fatal, panic). Default.
-log.SetLevel(log.InfoLevel)
+logrus.SetLevel(logrus.InfoLevel)
 ```
 
-It may be useful to set `log.Level = logrus.DebugLevel` in a debug or verbose
+It may be useful to set `logrus.Level = logrus.DebugLevel` in a debug or verbose
 environment if your application has that.
+
+Note: If you want different log levels for global (`logrus.SetLevel(...)`) and syslog logging, please check the [syslog hook README](hooks/syslog/README.md#different-log-levels-for-local-and-remote-logging).
 
 #### Entries
 
@@ -291,17 +344,17 @@ could do:
 
 ```go
 import (
-  log "github.com/sirupsen/logrus"
+  "github.com/sirupsen/logrus"
 )
 
-init() {
+func init() {
   // do something here to set environment depending on an environment variable
   // or command-line flag
   if Environment == "production" {
-    log.SetFormatter(&log.JSONFormatter{})
+    logrus.SetFormatter(&logrus.JSONFormatter{})
   } else {
     // The TextFormatter is default, you don't actually have to do this.
-    log.SetFormatter(&log.TextFormatter{})
+    logrus.SetFormatter(&logrus.TextFormatter{})
   }
 }
 ```
@@ -322,16 +375,21 @@ The built-in logging formatters are:
     [github.com/mattn/go-colorable](https://github.com/mattn/go-colorable).
   * When colors are enabled, levels are truncated to 4 characters by default. To disable
     truncation set the `DisableLevelTruncation` field to `true`.
-  * All options are listed in the [generated docs](https://godoc.org/github.com/sirupsen/logrus#TextFormatter).
+  * When outputting to a TTY, it's often helpful to visually scan down a column where all the levels are the same width. Setting the `PadLevelText` field to `true` enables this behavior, by adding padding to the level text.
+  * All options are listed in the [generated docs](https://pkg.go.dev/github.com/sirupsen/logrus#TextFormatter).
 * `logrus.JSONFormatter`. Logs fields as JSON.
-  * All options are listed in the [generated docs](https://godoc.org/github.com/sirupsen/logrus#JSONFormatter).
+  * All options are listed in the [generated docs](https://pkg.go.dev/github.com/sirupsen/logrus#JSONFormatter).
 
-Third party logging formatters:
+Third-party logging formatters:
 
 * [`FluentdFormatter`](https://github.com/joonix/log). Formats entries that can be parsed by Kubernetes and Google Container Engine.
+* [`GELF`](https://github.com/fabienm/go-logrus-formatters). Formats entries so they comply to Graylog's [GELF 1.1 specification](http://docs.graylog.org/en/2.4/pages/gelf.html).
 * [`logstash`](https://github.com/bshuster-repo/logrus-logstash-hook). Logs fields as [Logstash](http://logstash.net) Events.
 * [`prefixed`](https://github.com/x-cray/logrus-prefixed-formatter). Displays log entry source along with alternative layout.
-* [`zalgo`](https://github.com/aybabtme/logzalgo). Invoking the P͉̫o̳̼̊w̖͈̰͎e̬͔̭͂r͚̼̹̲ ̫͓͉̳͈ō̠͕͖̚f̝͍̠ ͕̲̞͖͑Z̖̫̤̫ͪa͉̬͈̗l͖͎g̳̥o̰̥̅!̣͔̲̻͊̄ ̙̘̦̹̦.
+* [`zalgo`](https://github.com/aybabtme/logzalgo). Invoking the Power of Zalgo.
+* [`nested-logrus-formatter`](https://github.com/antonfisher/nested-logrus-formatter). Converts logrus fields to a nested structure.
+* [`powerful-logrus-formatter`](https://github.com/zput/zxcTool). get fileName, log's line number and the latest function's name when print log; Save log to files.
+* [`caption-json-formatter`](https://github.com/nolleh/caption_json_formatter). logrus's message json formatter with human-readable caption added.
 
 You can define your formatter by implementing the `Formatter` interface,
 requiring a `Format` method. `Format` takes an `*Entry`. `entry.Data` is a
@@ -339,10 +397,9 @@ requiring a `Format` method. `Format` takes an `*Entry`. `entry.Data` is a
 default ones (see Entries section above):
 
 ```go
-type MyJSONFormatter struct {
-}
+type MyJSONFormatter struct{}
 
-log.SetFormatter(new(MyJSONFormatter))
+logrus.SetFormatter(new(MyJSONFormatter))
 
 func (f *MyJSONFormatter) Format(entry *Entry) ([]byte, error) {
   // Note this doesn't include Time, Level and Message which are available on
@@ -350,7 +407,7 @@ func (f *MyJSONFormatter) Format(entry *Entry) ([]byte, error) {
   // source of the official loggers.
   serialized, err := json.Marshal(entry.Data)
     if err != nil {
-      return nil, fmt.Errorf("Failed to marshal fields to JSON, %v", err)
+      return nil, fmt.Errorf("Failed to marshal fields to JSON, %w", err)
     }
   return append(serialized, '\n'), nil
 }
@@ -396,22 +453,23 @@ entries. It should not be a feature of the application-level logger.
 
 | Tool | Description |
 | ---- | ----------- |
-|[Logrus Mate](https://github.com/gogap/logrus_mate)|Logrus mate is a tool for Logrus to manage loggers, you can initial logger's level, hook and formatter by config file, the logger will generated with different config at different environment.|
+|[Logrus Mate](https://github.com/gogap/logrus_mate)|Logrus mate is a tool for Logrus to manage loggers, you can initial logger's level, hook and formatter by config file, the logger will be generated with different configs in different environments.|
 |[Logrus Viper Helper](https://github.com/heirko/go-contrib/tree/master/logrusHelper)|An Helper around Logrus to wrap with spf13/Viper to load configuration with fangs! And to simplify Logrus configuration use some behavior of [Logrus Mate](https://github.com/gogap/logrus_mate). [sample](https://github.com/heirko/iris-contrib/blob/master/middleware/logrus-logger/example) |
 
 #### Testing
 
-Logrus has a built in facility for asserting the presence of log messages. This is implemented through the `test` hook and provides:
+Logrus has a built-in facility for asserting the presence of log messages. This is implemented through the `test` hook and provides:
 
-* decorators for existing logger (`test.NewLocal` and `test.NewGlobal`) which basically just add the `test` hook
+* decorators for existing logger (`test.NewLocal` and `test.NewGlobal`) which basically just adds the `test` hook
 * a test logger (`test.NewNullLogger`) that just records log messages (and does not output any):
 
 ```go
 import(
+  "testing"
+
   "github.com/sirupsen/logrus"
   "github.com/sirupsen/logrus/hooks/test"
   "github.com/stretchr/testify/assert"
-  "testing"
 )
 
 func TestSomething(t*testing.T){
@@ -431,16 +489,16 @@ func TestSomething(t*testing.T){
 
 Logrus can register one or more functions that will be called when any `fatal`
 level message is logged. The registered handlers will be executed before
-logrus performs a `os.Exit(1)`. This behavior may be helpful if callers need
-to gracefully shutdown. Unlike a `panic("Something went wrong...")` call which can be intercepted with a deferred `recover` a call to `os.Exit(1)` can not be intercepted.
+logrus performs an `os.Exit(1)`. This behavior may be helpful if callers need
+to gracefully shut down. Unlike a `panic("Something went wrong...")` call which can be intercepted with a deferred `recover` a call to `os.Exit(1)` can not be intercepted.
 
-```
-...
+```go
+// ...
 handler := func() {
-  // gracefully shutdown something...
+  // gracefully shut down something...
 }
 logrus.RegisterExitHandler(handler)
-...
+// ...
 ```
 
 #### Thread safety
@@ -448,7 +506,7 @@ logrus.RegisterExitHandler(handler)
 By default, Logger is protected by a mutex for concurrent writes. The mutex is held when calling hooks and writing logs.
 If you are sure such locking is not needed, you can call logger.SetNoLock() to disable the locking.
 
-Situation when locking is not needed includes:
+Situations when locking is not needed include:
 
 * You have no hooks registered, or hooks calling is already thread-safe.
 
@@ -456,6 +514,6 @@ Situation when locking is not needed includes:
 
   1) logger.Out is protected by locks.
 
-  2) logger.Out is a os.File handler opened with `O_APPEND` flag, and every write is smaller than 4k. (This allow multi-thread/multi-process writing)
+  2) logger.Out is an os.File handler opened with `O_APPEND` flag, and every write is smaller than 4k. (This allows multi-thread/multi-process writing)
 
      (Refer to http://www.notthewizard.com/2014/06/17/are-files-appends-really-atomic/)
