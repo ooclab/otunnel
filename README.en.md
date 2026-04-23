@@ -155,3 +155,9 @@ docker run --rm -it --net=host ooclab/otunnel-amd64 /otunnel connect SERVER_IP:1
 
 - Wiki: [https://github.com/ooclab/otunnel/wiki](https://github.com/ooclab/otunnel/wiki)
 - Issues: [https://github.com/ooclab/otunnel/issues](https://github.com/ooclab/otunnel/issues)
+
+## WeChat Official Account
+
+Follow our WeChat Official Account: SynorAI.
+
+![WeChat Official Account QR Code](docs/assets/wechat_synorai_qr.png)
