@@ -163,6 +163,6 @@ docker run --rm -it --net=host ooclab/otunnel-amd64 /otunnel connect SERVER_IP:1
 
 ## 微信公众号
 
-欢迎关注微信公众号：SynorAI。
+欢迎关注微信公众号：`synorai`
 
 ![微信公众号二维码](docs/assets/wechat_synorai_qr.png)
