@@ -53,6 +53,12 @@ Now, anyone can access your `LOCAL_HOST:LOCAL_PORT` by `example.com:REMOTE_PORT`
 
 ## SystemD
 
+Install otunnel to `/usr/local/bin/otunnel`：
+
+```shell
+install -m 755 ./otunnel /usr/local/bin/otunnel
+```
+
 In the server side (listen a port) , create `/etc/systemd/system/otunnel-listen.service` :
 
 ```
