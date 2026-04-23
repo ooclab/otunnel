@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build and package binaries
+        env:
+          PROGRAM_NAME: otunnel
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+
+          PLATFORMS=(
+            "darwin/amd64"
+            "darwin/arm64"
+            "linux/amd64"
+            "linux/arm64"
+            "linux/386"
+            "linux/arm"
+            "linux/mips"
+            "linux/mipsle"
+            "windows/amd64"
+            "windows/arm64"
+          )
+
+          for platform in "${PLATFORMS[@]}"; do
+            GOOS="${platform%/*}"
+            GOARCH="${platform#*/}"
+            EXT=""
+            EXTRA_ENV=()
+
+            if [[ "$GOOS" == "windows" ]]; then
+              EXT=".exe"
+            fi
+            if [[ "$GOARCH" == "arm" ]]; then
+              EXTRA_ENV+=("GOARM=7")
+            fi
+            if [[ "$GOARCH" == "mips" || "$GOARCH" == "mipsle" ]]; then
+              EXTRA_ENV+=("GOMIPS=softfloat")
+            fi
+
+            BIN_NAME="${PROGRAM_NAME}_${GOOS}_${GOARCH}${EXT}"
+            PKG_BASE="${PROGRAM_NAME}_${GOOS}_${GOARCH}"
+
+            env CGO_ENABLED=0 GOOS="$GOOS" GOARCH="$GOARCH" "${EXTRA_ENV[@]}" \
+              go build -trimpath -ldflags "-s -w -X main.buildstamp=$(date -u +%Y-%m-%dT%H:%M:%SZ) -X main.githash=${GITHUB_SHA}" -o "dist/${BIN_NAME}" .
+
+            if [[ "$GOOS" == "windows" ]]; then
+              (cd dist && zip -9 "${PKG_BASE}.zip" "${BIN_NAME}")
+            else
+              tar -C dist -czf "dist/${PKG_BASE}.tar.gz" "${BIN_NAME}"
+            fi
+          done
+
+      - name: Generate checksums
+        run: |
+          set -euo pipefail
+          cd dist
+          shasum -a 256 *.tar.gz *.zip > checksums.txt
+
+      - name: Create GitHub release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/checksums.txt
+          generate_release_notes: true
