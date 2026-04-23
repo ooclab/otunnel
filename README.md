@@ -21,6 +21,7 @@ $ # use any of following commands to build otunnel
 
 $ make                    # normal build
 $ make static             # build a static program
+$ make build-all          # build all supported platform binaries into dist/
 $ go build -v             # the go build
 $ gox                     # simple cross build, you should install gox first!
 ```
