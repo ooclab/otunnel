@@ -69,11 +69,6 @@ make
 make build-all
 ```
 
-## CI
-
-GitHub Actions workflow 位于 `.github/workflows/ci.yml`。
-Push/PR 时会执行 `go mod tidy`、`go mod vendor`、`go build ./...` 和 `go test ./...`。
-
 ## Systemd
 
 安装到系统路径:
