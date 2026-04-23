@@ -2,7 +2,19 @@
 
 [简体中文](README.md) | **English**
 
-Secure reverse tunnel for exposing local services through a public server.
+Connect two private networks as if they were on the same cable.
+
+otunnel is a single-binary, low-friction, bidirectional secure tunnel CLI. With one tool, you can:
+
+- Share local SSH/HTTP to public teammates in minutes.
+- Reach remote private services from local for debugging.
+- Run mixed forward/reverse mappings in one connection.
+
+Why it is fast to adopt:
+
+- One binary.
+- One CLI.
+- Same command model for both roles: `listen` and `connect`.
 
 ## Quick Start
 
@@ -35,6 +47,22 @@ otunnel connect SERVER_IP:10000 -d -s abc123 -t 'r:127.0.0.1:22::50022'
 ```
 
 Now access your local SSH from public server `SERVER_IP:50022`.
+
+### Common Tunnel Patterns
+
+| Scenario | Command | Result |
+| --- | --- | --- |
+| Expose local service to public side (reverse) | `otunnel connect SERVER_IP:10000 -d -s abc123 -t 'r:127.0.0.1:22::50022'` | Access `SERVER_IP:50022` to reach local `22` |
+| Map remote internal service to local (forward) | `otunnel connect SERVER_IP:10000 -d -s abc123 -t 'f:tcp:127.0.0.1:18080:127.0.0.1:8080'` | Access local `127.0.0.1:18080` to reach remote `8080` |
+| Multiple tunnels in one connection | `otunnel connect SERVER_IP:10000 -d -s abc123 -t 'r:127.0.0.1:22::50022' -t 'f:tcp:127.0.0.1:18080:127.0.0.1:8080'` | Reverse + forward tunnels together |
+
+Readable multiline form:
+
+```bash
+otunnel connect SERVER_IP:10000 -d -s abc123 \
+  -t 'r:127.0.0.1:22::50022' \
+  -t 'f:tcp:127.0.0.1:18080:127.0.0.1:8080'
+```
 
 ## Download
 
