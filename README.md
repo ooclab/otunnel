@@ -25,6 +25,11 @@ $ go build -v             # the go build
 $ gox                     # simple cross build, you should install gox first!
 ```
 
+### CI
+
+GitHub Actions workflow is available at `.github/workflows/ci.yml`.
+It runs `go mod tidy`, `go mod vendor`, `go build ./...`, and `go test ./...` on push/PR.
+
 ### Platform Example
 
 #### dd-wrt

@@ -12,6 +12,8 @@ STATIC_LDFLAGS=-a -installsuffix cgo -ldflags "-s -X main.buildstamp=`date '+%Y-
 
 PROGRAM_NAME=otunnel
 
+.PHONY: all static install clean
+
 all:
 	$(GOBUILD) -v $(LDFLAGS) -o $(PROGRAM_NAME)
 static:
@@ -21,5 +23,5 @@ install:
 	$(GOINSTALL) -v
 
 clean:
-	@rm $(PROGRAM_NAME)*
+	@rm -f $(PROGRAM_NAME)*
 
