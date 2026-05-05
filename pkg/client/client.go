@@ -163,12 +163,24 @@ func (client *Client) Start() {
 	}
 }
 
+// startTCP implements exponential backoff reconnection strategy:
+// - Initial retry: 10 seconds
+// - Max retry: 300 seconds (5 minutes)
+// - Multiplier: 1.5x after each failure
 func (client *Client) startTCP() {
+	retryInterval := 10 * time.Second  // initial retry after 10s
+	maxRetryInterval := 300 * time.Second
 
 	for {
 		conn, err := client.connect()
 		if err != nil {
-			time.Sleep(1 * time.Second)
+			logrus.Errorf("connect failed: %s, retry in %v", err, retryInterval)
+			time.Sleep(retryInterval)
+			// exponential backoff: 10s -> 15s -> 22s -> 33s -> ... -> 300s
+			retryInterval = time.Duration(float64(retryInterval) * 1.5)
+			if retryInterval > maxRetryInterval {
+				retryInterval = maxRetryInterval
+			}
 			continue
 		}
 
@@ -195,9 +207,12 @@ func (client *Client) startTCP() {
 			l.Wait()
 		}
 		l.Close()
-		time.Sleep(1 * time.Second) // TODO: sleep smartly
-	}
+		conn.Close()
 
+		// connection closed, reset retry interval and reconnect
+		retryInterval = 10 * time.Second
+		logrus.Info("connection closed, reconnecting...")
+	}
 }
 
 func parseTunnel(value string) (proto string, localHost string, localPort int, remoteHost string, remotePort int, reverse bool, err error) {

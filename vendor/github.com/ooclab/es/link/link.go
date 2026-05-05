@@ -104,6 +104,7 @@ func newLink(config *LinkConfig, hdr session.RequestHandler) *Link {
 
 		pings:      make(map[uint32]chan struct{}),
 		shutdownCh: make(chan struct{}),
+		stopCh:     make(chan struct{}, 1),
 	}
 	l.log = logrus.WithFields(logrus.Fields{
 		"from": "link",
@@ -172,14 +173,14 @@ func (l *Link) IsStopped() bool {
 
 // Stop close the current transaction underlying conn
 func (l *Link) Stop() error {
-	if l.IsStopped() {
-		l.log.Warn("link is stopped already")
+	l.stopLock.Lock()
+	defer l.stopLock.Unlock()
+
+	if l.IsStopped() || l.stopCh == nil {
 		return nil
 	}
 
-	l.stopLock.Lock()
 	close(l.stopCh)
-	l.stopLock.Unlock()
 
 	return nil
 }
@@ -321,8 +322,13 @@ func (l *Link) send(conn es.Conn) error {
 
 // Bind bind link with a underlying connection (tcp)
 func (l *Link) Bind(conn es.Conn) error {
+	if l.wg != nil {
+		l.wg.Wait()
+	}
+	if l.stopCh == nil {
+		l.stopCh = make(chan struct{}, 1)
+	}
 	l.wg = &sync.WaitGroup{}
-	l.stopCh = make(chan struct{}, 1)
 
 	go func() {
 		l.wg.Add(1)
@@ -350,8 +356,6 @@ func (l *Link) Bind(conn es.Conn) error {
 func (l *Link) Wait() {
 	l.wg.Wait()
 	l.wg = nil
-	l.Stop()
-	l.stopCh = nil
 	l.log.Debug("wait completed")
 }
 

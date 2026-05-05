@@ -111,11 +111,20 @@ func (s *Server) startTCP() {
 
 	logrus.Infof("start (%s) server on %s success", s.Type, s.addr)
 
+	retryInterval := 1 * time.Second
+	maxRetryInterval := 30 * time.Second
+
 	for {
 		conn, err := l.Accept()
 		if err != nil {
-			logrus.Errorf("accept new conn error: %s", err)
-			continue // TODO: fix me!
+			logrus.Errorf("accept new conn error: %s, retry in %v", err, retryInterval)
+			time.Sleep(retryInterval)
+			// exponential backoff: 1s -> 1.5s -> 2.25s -> ... -> 30s
+			retryInterval = time.Duration(float64(retryInterval) * 1.5)
+			if retryInterval > maxRetryInterval {
+				retryInterval = maxRetryInterval
+			}
+			continue
 		}
 		logrus.WithFields(logrus.Fields{
 			"RemoteAddr": conn.RemoteAddr(),
